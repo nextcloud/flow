@@ -1,0 +1,38 @@
+[tool.black]
+line-length = 120
+target-versions = ["py310"]
+preview = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+select = ["A", "B", "C", "D", "E", "F", "G", "I", "S", "SIM", "PIE", "Q", "RET", "RUF", "UP" , "W"]
+extend-ignore = ["D101", "D102", "D103", "D105", "D107", "D203", "D213", "D401", "I001", "RUF100", "D400", "D415"]
+
+[tool.isort]
+profile = "black"
+
+[tool.pylint]
+master.py-version = "3.10"
+master.extension-pkg-allow-list = ["pydantic"]
+design.max-attributes = 8
+design.max-locals = 16
+design.max-branches = 16
+design.max-returns = 8
+design.max-args = 7
+basic.good-names = [
+    "a", "b", "c", "d", "e", "f", "i", "j", "k", "r", "v",
+    "ex", "_", "fp", "im", "nc", "ui",
+]
+reports.output-format = "colorized"
+similarities.ignore-imports = "yes"
+similarities.min-similarity-lines = 6
+messages_control.disable = [
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "line-too-long",
+    "too-few-public-methods",
+    "too-many-public-methods",
+    "global-statement",
+    "broad-exception-caught",
+]

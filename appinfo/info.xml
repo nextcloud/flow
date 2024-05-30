@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<info>
+	<id>skeleton</id>
+	<name>App Skeleton</name>
+	<summary>Nextcloud Python Application Skeleton</summary>
+	<description>
+	<![CDATA[Simplest skeleton of the Nextcloud application written in python]]>
+	</description>
+	<version>1.0.0</version>
+	<licence>MIT</licence>
+	<author mail="bigcat88@icloud.com" homepage="https://github.com/bigcat88">Alexander Piskun</author>
+	<namespace>PyAppV2_skeleton</namespace>
+	<category>tools</category>
+	<website>https://github.com/cloud-py-api/app-skeleton-python</website>
+	<bugs>https://github.com/cloud-py-api/app-skeleton-python/issues</bugs>
+	<repository type="git">https://github.com/cloud-py-api/app-skeleton-python</repository>
+	<dependencies>
+		<nextcloud min-version="27" max-version="30"/>
+	</dependencies>
+	<external-app>
+		<docker-install>
+			<registry>ghcr.io</registry>
+			<image>cloud-py-api/skeleton</image>
+			<image-tag>latest</image-tag>
+		</docker-install>
+		<scopes>
+		</scopes>
+		<system>false</system>
+	</external-app>
+</info>
