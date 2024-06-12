@@ -1,30 +1,33 @@
 <?xml version="1.0"?>
 <info>
-	<id>skeleton</id>
-	<name>App Skeleton</name>
-	<summary>Nextcloud Python Application Skeleton</summary>
+	<id>windmill_app</id>
+	<name>Workflow Engine</name>
+	<summary>Nextcloud Workflow Engine</summary>
 	<description>
 	<![CDATA[Simplest skeleton of the Nextcloud application written in python]]>
 	</description>
 	<version>1.0.0</version>
 	<licence>MIT</licence>
+	<author mail="julien-nc@posteo.net" homepage="https://github.com/julien-nc">Julien Veyssier</author>
+	<author mail="mklehr@gmx.net" homepage="https://github.com/marcelklehr">Marcel Klehr</author>
 	<author mail="bigcat88@icloud.com" homepage="https://github.com/bigcat88">Alexander Piskun</author>
-	<namespace>PyAppV2_skeleton</namespace>
+	<namespace>PyAppV2_windmill</namespace>
 	<category>tools</category>
-	<website>https://github.com/cloud-py-api/app-skeleton-python</website>
-	<bugs>https://github.com/cloud-py-api/app-skeleton-python/issues</bugs>
-	<repository type="git">https://github.com/cloud-py-api/app-skeleton-python</repository>
+	<website>https://github.com/cloud-py-api/windmill_app</website>
+	<bugs>https://github.com/cloud-py-api/windmill_app/issues</bugs>
+	<repository type="git">https://github.com/cloud-py-api/windmill_app</repository>
 	<dependencies>
-		<nextcloud min-version="27" max-version="30"/>
+		<nextcloud min-version="30" max-version="30"/>
 	</dependencies>
 	<external-app>
 		<docker-install>
 			<registry>ghcr.io</registry>
-			<image>cloud-py-api/skeleton</image>
+			<image>cloud-py-api/windmill_app_dev</image>
 			<image-tag>latest</image-tag>
 		</docker-install>
 		<scopes>
+			<value>ALL</value>
 		</scopes>
-		<system>false</system>
+		<system>true</system>
 	</external-app>
 </info>

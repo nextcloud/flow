@@ -93,3 +93,4 @@ MANIFEST
 converted/
 
 geckodriver.log
+/windmill_tmp/
