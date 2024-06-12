@@ -30,4 +30,4 @@ jobs:
       - name: Run Analysis
         run: |
           python3 -m pip install pylint
-          python3 -m pylint "lib/"
+          python3 -m pylint --recursive=y "ex_app/lib/"
