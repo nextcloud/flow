@@ -3,7 +3,7 @@ FROM ghcr.io/windmill-labs/windmill:${WINDMILL_VERSION}
 ARG WINDMILL_VERSION=1.342.0
 
 RUN apt update && \
-    apt install -y nano procps sudo wget
+    apt install -y sudo wget nano procps
 
 # Clone Windmill to build it's frontend with our custom URL for AppAPI
 RUN git clone --depth 1 -b fix/frontend/relative-paths https://github.com/marcelklehr/windmill.git /windmill_tmp

@@ -72,7 +72,9 @@ async def proxy_backend_requests(request: Request, path: str):
             cookies=request.cookies,
             content=await request.body(),
         )
-        print(f"proxy_BACKEND_requests: method={request.method}, path={path}, status={response.status_code}")
+        print(
+            f"proxy_BACKEND_requests: method={request.method}, path={path}, status={response.status_code}", flush=True
+        )
 
         response_header = dict(response.headers)
         response_header.pop("transfer-encoding", None)
@@ -92,6 +94,9 @@ async def proxy_backend_requests(request: Request, path: str):
 @APP.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH", "TRACE"])
 async def proxy_frontend_requests(request: Request, path: str):
     print(f"proxy_FRONTEND_requests: {path} - {request.method}\nCookies: {request.cookies}", flush=True)
+
+    # 2024-06-13 10:27:55 proxy_FRONTEND_requests: index.php/apps/app_api/proxy/windmill_app/ - GET
+
     if path == "index.php/apps/app_api/proxy/windmill_app/":
         path = path.replace("index.php/apps/app_api/proxy/windmill_app/", "")
     if path.startswith(("img/", "js/")):
@@ -115,7 +120,7 @@ async def proxy_frontend_requests(request: Request, path: str):
         return response
 
     print("proxy_FRONTEND_requests: <BAD> FILE DOES NOT EXIST: ", file_server_path, flush=True)
-    print("proxy_FRONTEND_TO_BACKEND_requests: Asking for reply from BACKEND..")
+    print("proxy_FRONTEND_TO_BACKEND_requests: Asking for reply from BACKEND..", flush=True)
     async with httpx.AsyncClient() as client:
         url = f"http://127.0.0.1:8000/{path}"
         headers = {key: value for key, value in request.headers.items() if key.lower() != "host"}
@@ -128,7 +133,8 @@ async def proxy_frontend_requests(request: Request, path: str):
             content=await request.body(),
         )
         print(
-            f"proxy_FRONTEND_TO_BACKEND_requests: method={request.method}, path={path}, status={response.status_code}"
+            f"proxy_FRONTEND_TO_BACKEND_requests: method={request.method}, path={path}, status={response.status_code}",
+            flush=True,
         )
         response_to_nc = Response(
             content=response.content, status_code=response.status_code, headers=dict(response.headers)
