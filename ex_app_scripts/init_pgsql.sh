@@ -30,18 +30,20 @@ fi
 mkdir -p "$DATA_DIR"
 chown -R postgres:postgres "$DATA_DIR"
 
-# Initialize the database, if not already initialized
 if [ ! -d "$DATA_DIR/base" ]; then
     echo "Initializing the PostgreSQL database..."
     sudo -u postgres ${PG_BIN}/initdb -D "$DATA_DIR"
 fi
 
-# Start PostgreSQL manually
 echo "Starting PostgreSQL..."
 sudo -u postgres ${PG_BIN}/pg_ctl -D "$DATA_DIR" -l "${DATA_DIR}/logfile" start
 
-# Wait for PostgreSQL to start and accept connections
-sleep 7
+echo "Waiting for PostgreSQL to start..."
+until sudo -u postgres ${PG_SQL} -c "SELECT 1" > /dev/null 2>&1; do
+    sleep 1
+    echo -n "."
+done
+echo "PostgreSQL is up and running."
 
 # Check if the user exists and create if not
 sudo -u postgres $PG_SQL -c "SELECT 1 FROM pg_user WHERE usename = '$DB_USER'" | grep -q 1 || \
