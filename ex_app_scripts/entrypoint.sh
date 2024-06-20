@@ -16,8 +16,12 @@ for arg in "$@"; do
         caddy run --config /etc/caddy/Caddyfile &
     elif [ "${arg##*.}" = "py" ]; then
         python3 "$arg" &
+	elif echo "$arg" | grep -q '^sleep'; then
+        sleep_duration=$(echo "$arg" | grep -o '[0-9]*')
+        echo "Sleeping for $sleep_duration seconds..."
+        sleep "$sleep_duration"
     else
-        "$arg" &
+        eval "$arg" &
     fi
 done
 

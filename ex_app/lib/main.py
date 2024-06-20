@@ -106,7 +106,7 @@ async def proxy_frontend_requests(request: Request, path: str):
         # file_server_path = Path("../../windmill_tmp/frontend/build/200.html")
         file_server_path = Path("/iframe/200.html")
     else:
-        # file_server_path = Path("../../iframe/frontend/build/").joinpath(path)
+        # file_server_path = Path("../../windmill_tmp/frontend/build/").joinpath(path)
         file_server_path = Path("/iframe/").joinpath(path)
     if file_server_path.exists():
         media_type = None
