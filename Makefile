@@ -16,14 +16,8 @@ build-push:
 	docker login ghcr.io
 	docker buildx build --push --platform linux/arm64/v8,linux/amd64 --tag ghcr.io/cloud-py-api/windmill_app_dev:latest .
 
-.PHONY: build-dev
-build-dev:
-	docker login ghcr.io
-	docker buildx build --push --platform linux/arm64/v8,linux/amd64 --tag ghcr.io/cloud-py-api/windmill_app_dev:latest .
-	#docker build -t windmill_app_dev:latest .
-
-.PHONY: run-dev
-run-dev:
+.PHONY: run
+run:
 	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:unregister windmill_app --silent --force || true
 	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:register windmill_app --force-scopes \
 		--info-xml https://raw.githubusercontent.com/cloud-py-api/windmill_app/main/appinfo/info.xml
