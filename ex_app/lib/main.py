@@ -10,7 +10,6 @@ from base64 import b64decode
 from contextlib import asynccontextmanager
 from pathlib import Path
 import asyncio
-import json
 import base64
 
 import httpx
@@ -144,10 +143,10 @@ async def init_callback(b_tasks: BackgroundTasks, nc: typing.Annotated[Nextcloud
     return responses.JSONResponse(content={})
 
 
-app_enabled = False
+APP_ENABLED = False
 @APP.put("/enabled")
 def enabled_callback(enabled: bool, nc: typing.Annotated[NextcloudApp, Depends(nc_app)]):
-    app_enabled = enabled
+    APP_ENABLED = enabled
     return responses.JSONResponse(content={"error": enabled_handler(enabled, nc)})
 
 
@@ -249,7 +248,7 @@ def generate_random_string(length=10):
 
 async def sync_timer():
     while True:
-        if app_enabled:
+        if APP_ENABLED:
             print("Running workflow sync")
             workspace = 'nextcloud'
             token = 'YOUR_TOKEN_HERE'
