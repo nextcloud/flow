@@ -25,6 +25,7 @@ from starlette.responses import FileResponse, Response
 # os.environ["APP_SECRET"] = "12345"
 # os.environ["APP_PORT"] = "23000"
 
+DEFAULT_USER_NAME = "admin@windmill.dev"
 USERS_STORAGE_PATH = Path(persistent_storage()).joinpath("windmill_users_config.json")
 USERS_STORAGE = {}
 print(str(USERS_STORAGE_PATH), flush=True)
@@ -143,10 +144,8 @@ async def init_callback(b_tasks: BackgroundTasks, nc: typing.Annotated[Nextcloud
     return responses.JSONResponse(content={})
 
 
-APP_ENABLED = False
 @APP.put("/enabled")
 def enabled_callback(enabled: bool, nc: typing.Annotated[NextcloudApp, Depends(nc_app)]):
-    APP_ENABLED = enabled
     return responses.JSONResponse(content={"error": enabled_handler(enabled, nc)})
 
 
@@ -224,7 +223,7 @@ def initialize_windmill() -> None:
         )
         if r.status_code >= 400:
             raise RuntimeError(f"initialize_windmill: can not change default credentials password, {r.text}")
-        add_user_to_storage("admin@windmill.dev", new_default_password, default_token)
+        add_user_to_storage(DEFAULT_USER_NAME, new_default_password, default_token)
         r = httpx.post(
             url="http://127.0.0.1:8000/api/workspaces/create",
             json={"id": "nextcloud", "name": "nextcloud"},
@@ -248,10 +247,12 @@ def generate_random_string(length=10):
 
 async def sync_timer():
     while True:
-        if APP_ENABLED:
+        nc = NextcloudApp()
+        enabled_flag = nc.ocs("GET", "/ocs/v1.php/apps/app_api/ex-app/state")
+        if enabled_flag:
             print("Running workflow sync")
             workspace = 'nextcloud'
-            token = 'YOUR_TOKEN_HERE'
+            token = USERS_STORAGE[DEFAULT_USER_NAME]['token']
             flow_paths = await get_flow_paths(workspace, token)
             expected_listeners = await get_expected_listeners(workspace, token, flow_paths)
             print(json.dumps(expected_listeners, indent=4), flush=True)
