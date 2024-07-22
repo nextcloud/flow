@@ -124,6 +124,7 @@ async def provision_user(request: Request) -> None:
     user_name = get_windmill_username_from_request(request)
     if not user_name:
         print("WARNING: provision_user: `username` is missing in the request to ExApp.", flush=True)
+        print("[DEBUG]: ", request.headers, flush=True)
         return
     user_email = get_user_email(user_name)
     if user_email in USERS_STORAGE:
@@ -263,6 +264,15 @@ def initialize_windmill() -> None:
             raise RuntimeError(f"initialize_windmill: can not change default credentials password, {r.text}")
         add_user_to_storage(DEFAULT_USER_EMAIL, new_default_password, default_token)
         r = httpx.post(
+            url="http://127.0.0.1:8000/api/users/tokens/create",
+            json={"label": "NC_PERSISTENT"},
+            cookies={"token": default_token},
+        )
+        if r.status_code >= 400:
+            raise RuntimeError(f"initialize_windmill: can not create persistent token, {r.text}")
+        default_token = r.text
+        add_user_to_storage(DEFAULT_USER_EMAIL, new_default_password, default_token)
+        r = httpx.post(
             url="http://127.0.0.1:8000/api/workspaces/create",
             json={"id": "nextcloud", "name": "nextcloud"},
             cookies={"token": default_token},
@@ -302,6 +312,7 @@ def webhooks_syncing():
         expected_listeners = get_expected_listeners(workspace, token, flow_paths)
         print("webhooks_syncing(expected_listeners):\n", json.dumps(expected_listeners, indent=4), flush=True)
         registered_listeners = get_registered_listeners()
+        print("get_registered_listeners: ", json.dumps(registered_listeners, indent=4), flush=True)
         for expected_listener in expected_listeners:
             registered_listeners_for_uri = get_registered_listeners_for_uri(
                 expected_listener["webhook"], registered_listeners
@@ -314,7 +325,6 @@ def webhooks_syncing():
                         update_listener(listener, expected_listener["filters"], token)
                 else:
                     register_listener(event, expected_listener["filters"], expected_listener["webhook"], token)
-        registered_listeners = get_registered_listeners()
         for registered_listener in registered_listeners:
             if registered_listener["appId"] == nc.app_cfg.app_name:  # noqa
                 if (
@@ -455,7 +465,6 @@ def update_listener(registered_listener: dict, event_filter, token: str) -> dict
 def get_registered_listeners():
     nc = NextcloudApp()
     r = nc.ocs("GET", "/ocs/v1.php/apps/webhook_listeners/api/v1/webhooks")
-    print("get_registered_listeners: ", json.dumps(r, indent=4), flush=True)
     for i in r:  # we need the same format as in `get_expected_listeners(workspace, token, flow_paths)`
         if not i["eventFilter"]:
             i["eventFilter"] = None  # replace [] with None
