@@ -35,4 +35,5 @@ messages_control.disable = [
     "too-many-public-methods",
     "global-statement",
     "broad-exception-caught",
+    "cell-var-from-loop",
 ]
