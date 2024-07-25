@@ -22,12 +22,11 @@
 	<external-app>
 		<docker-install>
 			<registry>ghcr.io</registry>
-			<image>cloud-py-api/windmill_app_dev</image>
+			<image>cloud-py-api/windmill_app</image>
 			<image-tag>latest</image-tag>
 		</docker-install>
 		<scopes>
 			<value>ALL</value>
 		</scopes>
-		<system>true</system>
 	</external-app>
 </info>
