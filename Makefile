@@ -11,10 +11,17 @@ help:
 	@echo "  "
 	@echo "  run               install WorkflowEngine for Nextcloud Last"
 
+.PHONY: init
+init:
+	git -c advice.detachedHead=False clone -b v1.368.3 https://github.com/windmill-labs/windmill.git windmill_src
+	cp Dockerfile requirements.txt windmill_src/
+	cp -r ex_app windmill_src/
+	cp -r ex_app_scripts windmill_src/
+
 .PHONY: build-push
 build-push:
 	docker login ghcr.io
-	docker buildx build --push --platform linux/arm64/v8,linux/amd64 --tag ghcr.io/cloud-py-api/windmill_app_dev:latest .
+	docker buildx build --push --build-arg VITE_BASE_URL=/index.php/apps/app_api/proxy/windmill_app --platform linux/arm64/v8,linux/amd64 --tag ghcr.io/cloud-py-api/windmill_app:latest .
 
 .PHONY: run
 run:

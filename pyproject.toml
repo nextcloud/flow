@@ -36,4 +36,5 @@ messages_control.disable = [
     "global-statement",
     "broad-exception-caught",
     "cell-var-from-loop",
+    "protected-access",
 ]

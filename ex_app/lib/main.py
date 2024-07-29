@@ -13,17 +13,16 @@ from pathlib import Path
 from time import sleep
 
 import httpx
-from fastapi import BackgroundTasks, Depends, FastAPI, Request, responses, status
+from fastapi import BackgroundTasks, Depends, FastAPI, Request, responses
 from nc_py_api import NextcloudApp, NextcloudException
 from nc_py_api.ex_app import LogLvl, nc_app, persistent_storage, run_app
 from nc_py_api.ex_app.integration_fastapi import AppAPIAuthMiddleware, fetch_models_task
 from starlette.responses import FileResponse, Response
 
-
 # os.environ["NEXTCLOUD_URL"] = "http://nextcloud.local/index.php"
 # os.environ["APP_HOST"] = "0.0.0.0"
 # os.environ["APP_ID"] = "windmill_app"
-# os.environ["APP_SECRET"] = "5NREvpXuj8aOgzNaEVvy0lIpJABeACppCV9m9UZo29XqXAlvPt2wcpw0vZ87o73PgsrowG/qfPvpm8KmUIL/HUzMv+nxb+WNsxG5E2ccWsZ2qruEcXjguWGcDYzWQTy0"  # noqa
+# os.environ["APP_SECRET"] = "12345"  # noqa
 # os.environ["APP_PORT"] = "23001"
 
 
@@ -188,12 +187,9 @@ def enabled_callback(enabled: bool, nc: typing.Annotated[NextcloudApp, Depends(n
     return responses.JSONResponse(content={"error": enabled_handler(enabled, nc)})
 
 
-@APP.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH", "TRACE"])
-async def proxy_backend_requests(request: Request, path: str):
-    print(f"proxy_BACKEND_requests: {path} - {request.method}\nCookies: {request.cookies}", flush=True)
-    await provision_user(request)
+async def proxy_request_to_windmill(request: Request, path: str, path_prefix: str = ""):
     async with httpx.AsyncClient() as client:
-        url = f"http://127.0.0.1:8000/api/{path}"
+        url = f"http://127.0.0.1:8000{path_prefix}/{path}"
         headers = {key: value for key, value in request.headers.items() if key.lower() not in ("host", "cookie")}
         if request.method == "GET":
             response = await client.get(
@@ -212,11 +208,20 @@ async def proxy_backend_requests(request: Request, path: str):
                 content=await request.body(),
             )
         print(
-            f"proxy_BACKEND_requests: method={request.method}, path={path}, status={response.status_code}", flush=True
+            "proxy_request_to_windmill: ",
+            f"method={request.method}, path={path}, path_prefix={path_prefix}, status={response.status_code}",
+            flush=True,
         )
         response_header = dict(response.headers)
         response_header.pop("transfer-encoding", None)
         return Response(content=response.content, status_code=response.status_code, headers=response_header)
+
+
+@APP.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH", "TRACE"])
+async def proxy_backend_requests(request: Request, path: str):
+    print(f"proxy_BACKEND_requests: {path} - {request.method}\nCookies: {request.cookies}", flush=True)
+    await provision_user(request)
+    return await proxy_request_to_windmill(request, path, "/api")
 
 
 @APP.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH", "TRACE"])
@@ -224,20 +229,23 @@ async def proxy_frontend_requests(request: Request, path: str):
     print(f"proxy_FRONTEND_requests: {path} - {request.method}\nCookies: {request.cookies}", flush=True)
     await provision_user(request)
     if path == "index.php/apps/app_api/proxy/windmill_app/":
-        path = path.replace("index.php/apps/app_api/proxy/windmill_app/", "")
+        raise ValueError("DEBUG: remove before release if no triggering of it")
+        # path = path.replace("index.php/apps/app_api/proxy/windmill_app/", "")
+    file_server_path = ""
     if path.startswith("ex_app"):
         file_server_path = Path("../../" + path)
-    elif not path or path == "user/login":
-        # file_server_path = Path("../../windmill_tmp/frontend/build/200.html")  # JS DEBUG MODE
-        file_server_path = Path("/iframe/200.html")
+    elif not path:
+        file_server_path = Path("/static_frontend/200.html").joinpath(path)
+    elif Path("/static_frontend/").joinpath(path).is_file():
+        file_server_path = Path("/static_frontend/").joinpath(path)
+
+    if file_server_path:
+        print("proxy_FRONTEND_requests: <OK> Returning: ", str(file_server_path), flush=True)
+        response = FileResponse(str(file_server_path))
     else:
-        # file_server_path = Path("../../windmill_tmp/frontend/build/").joinpath(path)  # JS DEBUG MODE
-        file_server_path = Path("/iframe/").joinpath(path)
-    if not file_server_path.exists():
-        return Response(status_code=status.HTTP_404_NOT_FOUND)
-    response = FileResponse(str(file_server_path))
+        print(f"proxy_FRONTEND_requests: <LOCAL FILE MISSING> Routing({path}) to the backend", flush=True)
+        response = await proxy_request_to_windmill(request, path)
     response.headers["content-security-policy"] = "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;"
-    print("proxy_FRONTEND_requests: <OK> Returning: ", str(file_server_path), flush=True)
     return response
 
 
