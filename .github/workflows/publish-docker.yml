@@ -51,6 +51,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
+          no-cache: true
           context: windmill_src
           platforms: linux/amd64,linux/arm64
           tags: ghcr.io/cloud-py-api/windmill_app:${{ env.VERSION }}
