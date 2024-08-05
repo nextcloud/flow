@@ -30,7 +30,7 @@
 		</scopes>
 		<routes>
 			<route>
-				<url>^ex_app\/.*</url>
+				<url>.*</url>
 				<verb>GET,POST,PUT,DELETE</verb>
 				<access_level>ADMIN</access_level>
 				<headers_to_exclude>[]</headers_to_exclude>
