@@ -11,6 +11,7 @@ from base64 import b64decode
 from contextlib import asynccontextmanager
 from pathlib import Path
 from time import sleep
+import re
 
 import httpx
 from fastapi import BackgroundTasks, Depends, FastAPI, Request, responses
@@ -18,6 +19,7 @@ from nc_py_api import NextcloudApp, NextcloudException
 from nc_py_api.ex_app import LogLvl, nc_app, persistent_storage, run_app
 from nc_py_api.ex_app.integration_fastapi import AppAPIAuthMiddleware, fetch_models_task
 from starlette.responses import FileResponse, Response
+from starlette.middleware.base import BaseHTTPMiddleware
 
 # os.environ["NEXTCLOUD_URL"] = "http://nextcloud.local/index.php"
 # os.environ["APP_HOST"] = "0.0.0.0"
@@ -113,7 +115,7 @@ def get_valid_user_token_sync(user_email: str) -> str:
     return token
 
 
-async def provision_user(request: Request) -> None:
+async def provision_user(request: Request, create_missing_user: bool) -> None:
     if "token" in request.cookies:
         print(f"DEBUG: TOKEN IS PRESENT: {request.cookies['token']}", flush=True)
         if (await check_token(request.cookies["token"])) is True:
@@ -129,12 +131,47 @@ async def provision_user(request: Request) -> None:
     if user_email in USERS_STORAGE:
         windmill_token_valid = await check_token(USERS_STORAGE[user_email]["token"])
         if not USERS_STORAGE[user_email]["token"] or windmill_token_valid is False:
+            if not create_missing_user:
+                print(f"WARNING: Do not creating user due to specified flag.", flush=True)
+                return
             user_password = USERS_STORAGE[user_email]["password"]
             add_user_to_storage(user_email, user_password, await login_user(user_email, user_password))
     else:
         await create_user(user_name)
     request.cookies["token"] = USERS_STORAGE[user_email]["token"]
     print(f"DEBUG: ADDING TOKEN({request.cookies['token']}) to request", flush=True)
+
+
+RATE_LIMIT_DICT = {}
+PROTECTED_URLS = [
+    r"^/api/w/nextcloud/jobs/.*",
+]
+
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        print(request.url.path, flush=True)
+        x_origin_ip = request.headers.get("X-Origin-IP")
+        request_path = request.url.path
+        key = (x_origin_ip, request_path)
+        if key in RATE_LIMIT_DICT:
+            delay = min(5, RATE_LIMIT_DICT[key])  # Maximum delay of 5 seconds
+            await asyncio.sleep(delay)
+
+        response = await call_next(request)
+
+        for pattern in PROTECTED_URLS:
+            if re.match(pattern, request_path):
+                if response.status_code == 401:
+                    if key in RATE_LIMIT_DICT:
+                        RATE_LIMIT_DICT[key] += 1
+                    else:
+                        RATE_LIMIT_DICT[key] = 1
+                elif key in RATE_LIMIT_DICT and response.status_code < 400:
+                    del RATE_LIMIT_DICT[key]  # remove RateLimit if action was successful
+                break
+
+        return response
 
 
 @asynccontextmanager
@@ -145,6 +182,7 @@ async def lifespan(_app: FastAPI):
 
 APP = FastAPI(lifespan=lifespan)
 APP.add_middleware(AppAPIAuthMiddleware)  # set global AppAPI authentication middleware
+# APP.add_middleware(RateLimitMiddleware)
 
 
 def get_windmill_username_from_request(request: Request) -> str:
@@ -220,14 +258,14 @@ async def proxy_request_to_windmill(request: Request, path: str, path_prefix: st
 @APP.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH", "TRACE"])
 async def proxy_backend_requests(request: Request, path: str):
     print(f"proxy_BACKEND_requests: {path} - {request.method}\nCookies: {request.cookies}", flush=True)
-    await provision_user(request)
+    await provision_user(request, False)
     return await proxy_request_to_windmill(request, path, "/api")
 
 
 @APP.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH", "TRACE"])
 async def proxy_frontend_requests(request: Request, path: str):
     print(f"proxy_FRONTEND_requests: {path} - {request.method}\nCookies: {request.cookies}", flush=True)
-    await provision_user(request)
+    await provision_user(request, True)
     if path == "index.php/apps/app_api/proxy/windmill_app/":
         raise ValueError("DEBUG: remove before release if no triggering of it")
         # path = path.replace("index.php/apps/app_api/proxy/windmill_app/", "")

@@ -16,15 +16,11 @@ help:
 
 .PHONY: init
 init:
-	git -c advice.detachedHead=False clone -b v1.368.3 https://github.com/windmill-labs/windmill.git windmill_src
+	git -c advice.detachedHead=False clone -b v1.376.1 https://github.com/windmill-labs/windmill.git windmill_src
 	cp Dockerfile requirements.txt windmill_src/
 
 	cp -r ex_app windmill_src/
 	cp -r ex_app_scripts windmill_src/
-
-	# Apply the patch: https://github.com/windmill-labs/windmill/issues/4190
-	cd windmill_src && git apply --check ../webhooks_urls_ui.patch
-	cd windmill_src && git apply ../webhooks_urls_ui.patch
 
 .PHONY: build-push
 build-push:
