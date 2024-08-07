@@ -30,15 +30,15 @@
 		</scopes>
 		<routes>
 			<route>
-				<url>.*</url>
-				<verb>GET,POST,PUT,DELETE</verb>
-				<access_level>ADMIN</access_level>
-				<headers_to_exclude>[]</headers_to_exclude>
-			</route>
-			<route>
 				<url>^api\/w\/nextcloud\/jobs\/.*</url>
 				<verb>GET,POST,PUT,DELETE</verb>
 				<access_level>PUBLIC</access_level>
+				<headers_to_exclude>[]</headers_to_exclude>
+			</route>
+			<route>
+				<url>.*</url>
+				<verb>GET,POST,PUT,DELETE</verb>
+				<access_level>ADMIN</access_level>
 				<headers_to_exclude>[]</headers_to_exclude>
 			</route>
 		</routes>

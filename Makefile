@@ -43,7 +43,7 @@ build-push-dev:
 
 .PHONY: run
 run:
-	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:unregister windmill_app --silent --force || true
+	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:unregister windmill_app --silent --force --keep-data || true
 	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:register windmill_app --force-scopes \
 		--info-xml https://raw.githubusercontent.com/cloud-py-api/windmill_app/main/appinfo/info.xml
 
