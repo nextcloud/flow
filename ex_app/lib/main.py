@@ -5,21 +5,21 @@ import contextlib
 import json
 import os
 import random
+import re
 import string
 import typing
 from base64 import b64decode
 from contextlib import asynccontextmanager
 from pathlib import Path
 from time import sleep
-import re
 
 import httpx
 from fastapi import BackgroundTasks, Depends, FastAPI, Request, responses
 from nc_py_api import NextcloudApp, NextcloudException
 from nc_py_api.ex_app import LogLvl, nc_app, persistent_storage, run_app
 from nc_py_api.ex_app.integration_fastapi import AppAPIAuthMiddleware, fetch_models_task
-from starlette.responses import FileResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import FileResponse, Response
 
 # os.environ["NEXTCLOUD_URL"] = "http://nextcloud.local/index.php"
 # os.environ["APP_HOST"] = "0.0.0.0"
@@ -132,7 +132,7 @@ async def provision_user(request: Request, create_missing_user: bool) -> None:
         windmill_token_valid = await check_token(USERS_STORAGE[user_email]["token"])
         if not USERS_STORAGE[user_email]["token"] or windmill_token_valid is False:
             if not create_missing_user:
-                print(f"WARNING: Do not creating user due to specified flag.", flush=True)
+                print("WARNING: Do not creating user due to specified flag.", flush=True)
                 return
             user_password = USERS_STORAGE[user_email]["password"]
             add_user_to_storage(user_email, user_password, await login_user(user_email, user_password))
@@ -182,7 +182,7 @@ async def lifespan(_app: FastAPI):
 
 APP = FastAPI(lifespan=lifespan)
 APP.add_middleware(AppAPIAuthMiddleware)  # set global AppAPI authentication middleware
-# APP.add_middleware(RateLimitMiddleware)
+APP.add_middleware(RateLimitMiddleware)
 
 
 def get_windmill_username_from_request(request: Request) -> str:
