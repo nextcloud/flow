@@ -45,10 +45,9 @@ run:
 
 .PHONY: run-dev
 run-dev:
-	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:unregister windmill_app --silent --force || true
-	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:register windmill_app --json-info \
-  "{\"id\":\"windmill_app\",\"name\":\"Workflow Engine\",\"version\":\"1.0.0\",\"docker-install\":{\"registry\":\"ghcr.io\", \"image\":\"cloud-py-api/windmill_app\", \"image-tag\":\"latest\"},\"scopes\":[\"ALL\"]}" \
-  --force-scopes --wait-finish
+	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:unregister windmill_app --silent --force --keep-data || true
+	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:register windmill_app --force-scopes \
+		--info-xml https://raw.githubusercontent.com/cloud-py-api/windmill_app/main/appinfo/info-dev.xml
 
 .PHONY: register
 register:

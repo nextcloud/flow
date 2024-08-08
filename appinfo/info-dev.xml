@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<info>
+	<id>windmill_app</id>
+	<name>Workflow Engine</name>
+	<summary>Nextcloud Workflow Engine</summary>
+	<description>
+	<![CDATA[Simplest skeleton of the Nextcloud application written in python]]>
+	</description>
+	<version>1.0.0</version>
+	<licence>MIT</licence>
+	<author mail="julien-nc@posteo.net" homepage="https://github.com/julien-nc">Julien Veyssier</author>
+	<author mail="mklehr@gmx.net" homepage="https://github.com/marcelklehr">Marcel Klehr</author>
+	<author mail="bigcat88@icloud.com" homepage="https://github.com/bigcat88">Alexander Piskun</author>
+	<namespace>PyAppV2_windmill</namespace>
+	<category>tools</category>
+	<website>https://github.com/cloud-py-api/windmill_app</website>
+	<bugs>https://github.com/cloud-py-api/windmill_app/issues</bugs>
+	<repository type="git">https://github.com/cloud-py-api/windmill_app</repository>
+	<dependencies>
+		<nextcloud min-version="30" max-version="30"/>
+	</dependencies>
+	<external-app>
+		<docker-install>
+			<registry>ghcr.io</registry>
+			<image>cloud-py-api/windmill_app</image>
+			<image-tag>latest</image-tag>
+		</docker-install>
+		<scopes>
+			<value>ALL</value>
+		</scopes>
+		<routes>
+			<route>
+				<url>^api\/w\/nextcloud\/jobs\/.*</url>
+				<verb>GET,POST,PUT,DELETE</verb>
+				<access_level>PUBLIC</access_level>
+				<headers_to_exclude>[]</headers_to_exclude>
+			</route>
+			<route>
+				<url>.*</url>
+				<verb>GET,POST,PUT,DELETE</verb>
+				<access_level>ADMIN</access_level>
+				<headers_to_exclude>[]</headers_to_exclude>
+			</route>
+		</routes>
+	</external-app>
+</info>
