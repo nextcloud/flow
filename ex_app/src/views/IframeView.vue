@@ -44,6 +44,8 @@ export default {
 		}
 	},
 	mounted() {
+		this.setIframeSrc()
+
 		const timeout = setTimeout(() => {
 			this.error = true
 			this.loading = false
@@ -58,6 +60,20 @@ export default {
 			this.error = true
 			this.loading = false
 		})
+	},
+	methods: {
+		setIframeSrc() {
+			let url = generateUrl(`/index.php${APP_API_PROXY_URL_PREFIX}/${EX_APP_ID}/`)
+			/* eslint-disable no-console */
+			console.log('Generated URL with index.php:', url)
+			if (url.includes('/index.php/index.php/')) {
+				url = generateUrl(`${APP_API_PROXY_URL_PREFIX}/${EX_APP_ID}/`)
+				console.log('Generated URL without index.php:', url)
+			}
+			this.iframeSrc = url
+			console.log('Final iframeSrc:', this.iframeSrc)
+			/* eslint-enable no-console */
+		},
 	},
 }
 </script>

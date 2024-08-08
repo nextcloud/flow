@@ -201,7 +201,7 @@ def enabled_handler(enabled: bool, nc: NextcloudApp) -> str:
     if enabled:
         nc.log(LogLvl.WARNING, f"Hello from {nc.app_cfg.app_name} :)")
         nc.ui.resources.set_script("top_menu", "windmill_app", "ex_app/js/windmill_app-main")
-        nc.ui.top_menu.register("windmill_app", "Workflow Engine", "ex_app/img/app.svg")
+        nc.ui.top_menu.register("windmill_app", "Workflow Engine", "ex_app/img/app.svg", True)
     else:
         nc.log(LogLvl.WARNING, f"Bye bye from {nc.app_cfg.app_name} :(")
         nc.ui.resources.delete_script("top_menu", "windmill_app", "ex_app/js/windmill_app-main")
