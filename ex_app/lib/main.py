@@ -344,11 +344,21 @@ async def start_background_webhooks_syncing():
 
 
 def webhooks_syncing():
+    while True:
+        try:
+            _webhooks_syncing()
+        except Exception as e:
+            print(f"webhooks_syncing: Exception occurred! Info: {e}")
+            sleep(60)
+
+
+def _webhooks_syncing():
     workspace = "nextcloud"
 
     while True:
         nc = NextcloudApp()
         if not nc.enabled_state:
+            print("ExApp is disabled, sleeping for 5 minutes")
             sleep(5 * 60)
             continue
         print("Running workflow sync")
