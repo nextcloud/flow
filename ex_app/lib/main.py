@@ -376,8 +376,8 @@ def _webhooks_syncing():
             )
             for event in expected_listener["events"]:
                 listener = next(filter(lambda listener: listener["event"] == event, registered_listeners_for_uri), None)
-                listener["eventFilter"] = _preprocess_webhook_event_filter(listener["eventFilter"])
                 if listener is not None:
+                    listener["eventFilter"] = _preprocess_webhook_event_filter(listener["eventFilter"])
                     if listener["eventFilter"] != expected_listener["filters"]:
                         print("webhooks_syncing: before update_listener:", json.dumps(listener))
                         update_listener(listener, expected_listener["filters"], token)
