@@ -34,12 +34,14 @@
 				<verb>GET,POST,PUT,DELETE</verb>
 				<access_level>PUBLIC</access_level>
 				<headers_to_exclude>[]</headers_to_exclude>
+				<bruteforce_protection>401</bruteforce_protection>
 			</route>
 			<route>
 				<url>^api\/w\/nextcloud\/jobs_u\/.*</url>
 				<verb>GET,POST,PUT,DELETE</verb>
 				<access_level>PUBLIC</access_level>
 				<headers_to_exclude>[]</headers_to_exclude>
+				<bruteforce_protection>401</bruteforce_protection>
 			</route>
 			<route>
 				<url>.*</url>
