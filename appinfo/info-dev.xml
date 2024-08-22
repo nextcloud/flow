@@ -23,7 +23,7 @@
 		<docker-install>
 			<registry>ghcr.io</registry>
 			<image>cloud-py-api/windmill_app</image>
-			<image-tag>latest</image-tag>
+			<image-tag>1.0.0</image-tag>
 		</docker-install>
 		<scopes>
 			<value>ALL</value>
@@ -34,6 +34,14 @@
 				<verb>GET,POST,PUT,DELETE</verb>
 				<access_level>PUBLIC</access_level>
 				<headers_to_exclude>[]</headers_to_exclude>
+				<bruteforce_protection>[401, 500]</bruteforce_protection>
+			</route>
+			<route>
+				<url>^api\/w\/nextcloud\/jobs_u\/.*</url>
+				<verb>GET,POST,PUT,DELETE</verb>
+				<access_level>PUBLIC</access_level>
+				<headers_to_exclude>[]</headers_to_exclude>
+				<bruteforce_protection>[401, 500]</bruteforce_protection>
 			</route>
 			<route>
 				<url>.*</url>
