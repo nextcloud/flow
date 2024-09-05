@@ -9,14 +9,13 @@ help:
 	@echo "  "
 	@echo "  init        	   clone Windmill repository to the 'windmill_src' folder and copy ExApp files inside it"
 	@echo "  build-push        build image and upload to ghcr.io"
-	@echo "  build-push-dev    build image and upload to ghcr.io with 'latest' tag"
 	@echo "  "
-	@echo "  run               install WorkflowEngine for Nextcloud Last"
-	@echo "  run-dev           install WorkflowEngine with 'latest' tag for Nextcloud 30"
+	@echo "  run30             install Flow for Nextcloud 30"
+	@echo "  run               install Flow for Nextcloud Last"
 
 .PHONY: init
 init:
-	git -c advice.detachedHead=False clone -b v1.376.1 https://github.com/windmill-labs/windmill.git windmill_src
+	git -c advice.detachedHead=False clone -b v1.391.0 https://github.com/windmill-labs/windmill.git windmill_src
 	cp Dockerfile requirements.txt windmill_src/
 
 	cp -r ex_app windmill_src/
@@ -27,31 +26,31 @@ build-push:
 	docker login ghcr.io
 	VERSION=$$(xmlstarlet sel -t -v "//image-tag" appinfo/info.xml) && \
 	pushd windmill_src && \
-	docker buildx build --push --build-arg VITE_BASE_URL=/index.php/apps/app_api/proxy/windmill_app --platform linux/arm64/v8,linux/amd64 --tag ghcr.io/cloud-py-api/windmill_app:$$VERSION . && \
+	docker buildx build --push --build-arg VITE_BASE_URL=/index.php/apps/app_api/proxy/windmill_app --platform linux/arm64/v8,linux/amd64 --tag ghcr.io/cloud-py-api/flow:$$VERSION . && \
 	popd
 
-.PHONY: build-push-dev
-build-push-dev:
-	docker login ghcr.io
-	pushd windmill_src && \
-	docker buildx build --push --build-arg VITE_BASE_URL=/index.php/apps/app_api/proxy/windmill_app --platform linux/arm64/v8,linux/amd64 --tag ghcr.io/cloud-py-api/windmill_app:latest . && \
-	popd
+.PHONY: run30
+run30:
+	docker exec master-stable30-1 sudo -u www-data php occ app_api:app:unregister flow --silent --force || true
+	docker exec master-stable30-1 sudo -u www-data php occ app_api:app:register flow \
+		--info-xml https://raw.githubusercontent.com/cloud-py-api/flow/main/appinfo/info.xml
 
 .PHONY: run
 run:
-	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:unregister windmill_app --silent --force --keep-data || true
-	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:register windmill_app --force-scopes \
-		--info-xml https://raw.githubusercontent.com/cloud-py-api/windmill_app/main/appinfo/info.xml
+	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:unregister flow --silent --force || true
+	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:register flow \
+		--info-xml https://raw.githubusercontent.com/cloud-py-api/flow/main/appinfo/info.xml
 
-.PHONY: run-dev
-run-dev:
-	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:unregister windmill_app --silent --force --keep-data || true
-	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:register windmill_app --force-scopes \
-		--info-xml https://raw.githubusercontent.com/cloud-py-api/windmill_app/main/appinfo/info-dev.xml
+.PHONY: register30
+register30:
+	docker exec master-stable30-1 sudo -u www-data php occ app_api:app:unregister flow --silent --force || true
+	docker exec master-stable30-1 sudo -u www-data php occ app_api:app:register flow manual_install --json-info \
+  "{\"id\":\"flow\",\"name\":\"Flow\",\"daemon_config_name\":\"manual_install\",\"version\":\"1.0.0\",\"secret\":\"12345\",\"port\":23000}" \
+  --wait-finish
 
 .PHONY: register
 register:
-	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:unregister windmill_app --silent --force || true
-	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:register windmill_app manual_install --json-info \
-  "{\"id\":\"windmill_app\",\"name\":\"Workflow Engine\",\"daemon_config_name\":\"manual_install\",\"version\":\"1.0.0\",\"secret\":\"12345\",\"port\":23000,\"scopes\":[\"ALL\"]}" \
-  --force-scopes --wait-finish
+	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:unregister flow --silent --force || true
+	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:register flow manual_install --json-info \
+  "{\"id\":\"flow\",\"name\":\"Flow\",\"daemon_config_name\":\"manual_install\",\"version\":\"1.0.0\",\"secret\":\"12345\",\"port\":23000}" \
+  --wait-finish
