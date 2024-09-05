@@ -29,7 +29,7 @@ Flow brings a wealth of features designed to improve productivity and collaborat
 
 ## Benefits of Using Flow
 
-Flow is more than just a workflow tool—it's a productivity powerhouse designed to work seamlessly in the Nextcloud environment, enhancing everything from document management to team collaboration.
+Flow is more than just a workflow tool. It's a productivity powerhouse designed to work seamlessly in the Nextcloud environment, enhancing everything from document management to team collaboration.
 
 ### 1. **Centralized Workflow Automation**
    - Flow helps you centralize all your workflow automation needs within Nextcloud, reducing the need for external tools and ensuring a smoother, more integrated experience for users.
