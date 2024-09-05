@@ -48,7 +48,7 @@ Flow is more than just a workflow tool—it's a productivity powerhouse designed
 Flow is designed to be easy to set up and use. Follow these steps to get started:
 
 ### Step 1: Install Flow in Nextcloud
-To install Flow, navigate to the Nextcloud AppStore and search for **Flow**. Install the app and [`follow the instructions`](TODO) to complete the setup.
+To install Flow, navigate to the Nextcloud AppStore and search for **Flow**. Install the app and [`follow the instructions`](https://docs.nextcloud.com/server/latest/admin_manual/windmill_workflows/index.html) to complete the setup.
 
 ### Step 2: Configure Workflows
 Once Flow is installed, you can start creating workflows by accessing the Flow tab within Nextcloud. Use the drag-and-drop builder to configure your desired workflows, add conditions, and set triggers.
