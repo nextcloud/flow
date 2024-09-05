@@ -1,28 +1,40 @@
 <?xml version="1.0"?>
 <info>
-	<id>windmill_app</id>
-	<name>Workflow Engine</name>
-	<summary>Nextcloud Workflow Engine</summary>
+	<id>flow</id>
+	<name>Flow</name>
+	<summary>Automate and Streamline Your Workflows in Nextcloud</summary>
 	<description>
-	<![CDATA[Simplest skeleton of the Nextcloud application written in python]]>
-	</description>
+	<![CDATA[Flow is a powerful automation and workflow application, fully integrated into your Nextcloud ecosystem. Designed with a sleek interface and advanced capabilities, Flow empowers you to streamline tasks, automate repetitive processes, and enhance collaboration—all within the secure and familiar environment of Nextcloud.
+
+### With Flow, you can:
+
+- Automate complex workflows with ease using intuitive drag-and-drop features.
+- Schedule tasks, set triggers, and monitor progress in real-time.
+- Keep your team in sync by connecting various apps and services, all under one platform.
+- Enjoy a seamless experience, whether you're managing documents, communications, or custom workflows.
+
+Flow is the key to unlocking enhanced productivity in Nextcloud, designed to be both user-friendly and flexible, so you can focus on what truly matters.
+
+**Requires [`AppAPI`](https://github.com/nextcloud/app_api) and `webhook_listeners` to be enabled to work.**
+
+	]]></description>
 	<version>1.0.0</version>
-	<licence>MIT</licence>
+	<licence>agpl</licence>
 	<author mail="julien-nc@posteo.net" homepage="https://github.com/julien-nc">Julien Veyssier</author>
 	<author mail="mklehr@gmx.net" homepage="https://github.com/marcelklehr">Marcel Klehr</author>
 	<author mail="bigcat88@icloud.com" homepage="https://github.com/bigcat88">Alexander Piskun</author>
-	<namespace>PyAppV2_windmill</namespace>
+	<namespace>PyAppV2_flow</namespace>
 	<category>tools</category>
-	<website>https://github.com/cloud-py-api/windmill_app</website>
-	<bugs>https://github.com/cloud-py-api/windmill_app/issues</bugs>
-	<repository type="git">https://github.com/cloud-py-api/windmill_app</repository>
+	<website>https://github.com/cloud-py-api/flow</website>
+	<bugs>https://github.com/cloud-py-api/flow/issues</bugs>
+	<repository type="git">https://github.com/cloud-py-api/flow</repository>
 	<dependencies>
 		<nextcloud min-version="30" max-version="30"/>
 	</dependencies>
 	<external-app>
 		<docker-install>
 			<registry>ghcr.io</registry>
-			<image>cloud-py-api/windmill_app</image>
+			<image>cloud-py-api/flow</image>
 			<image-tag>1.0.0</image-tag>
 		</docker-install>
 		<scopes>
