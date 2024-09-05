@@ -142,38 +142,6 @@ async def provision_user(request: Request, create_missing_user: bool) -> None:
     print(f"DEBUG: ADDING TOKEN({request.cookies['token']}) to request", flush=True)
 
 
-RATE_LIMIT_DICT = {}
-PROTECTED_URLS = [
-    r"^/api/w/nextcloud/jobs/.*",
-]
-
-
-class RateLimitMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        print(request.url.path, flush=True)
-        x_origin_ip = request.headers.get("X-Origin-IP")
-        request_path = request.url.path
-        key = (x_origin_ip, request_path)
-        if key in RATE_LIMIT_DICT:
-            delay = min(5, RATE_LIMIT_DICT[key])  # Maximum delay of 5 seconds
-            await asyncio.sleep(delay)
-
-        response = await call_next(request)
-
-        for pattern in PROTECTED_URLS:
-            if re.match(pattern, request_path):
-                if response.status_code == 401:
-                    if key in RATE_LIMIT_DICT:
-                        RATE_LIMIT_DICT[key] += 1
-                    else:
-                        RATE_LIMIT_DICT[key] = 1
-                elif key in RATE_LIMIT_DICT and response.status_code < 400:
-                    del RATE_LIMIT_DICT[key]  # remove RateLimit if action was successful
-                break
-
-        return response
-
-
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     _t = asyncio.create_task(start_background_webhooks_syncing())  # noqa
@@ -182,7 +150,6 @@ async def lifespan(_app: FastAPI):
 
 APP = FastAPI(lifespan=lifespan)
 APP.add_middleware(AppAPIAuthMiddleware)  # set global AppAPI authentication middleware
-APP.add_middleware(RateLimitMiddleware)
 
 
 def get_windmill_username_from_request(request: Request) -> str:
