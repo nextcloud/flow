@@ -7,13 +7,51 @@ jobs:
   push_to_registry:
     name: Build image
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'cloud-py-api' }}  # REPLACE THIS WITH YOUR ORGANIZATION NAME
+    if: ${{ github.repository_owner == 'cloud-py-api' }}
     permissions:
       packages: write
       contents: read
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v4
+      - name: Set app env
+        run: |
+          # Split and keep last
+          echo "APP_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
+          echo "APP_VERSION=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
+        with:
+          path: ${{ env.APP_NAME }}
+
+      - name: Read package.json node and npm engines version
+        uses: skjnldsv/read-package-engines-version-actions@0ce2ed60f6df073a62a77c0a4958dd0fc68e32e7 # v2.1
+        id: versions
+        # Continue if no package.json
+        continue-on-error: true
+        with:
+          path: ${{ env.APP_NAME }}
+          fallbackNode: "^20"
+          fallbackNpm: "^10"
+
+      - name: Set up node ${{ steps.versions.outputs.nodeVersion }}
+        # Skip if no package.json
+        if: ${{ steps.versions.outputs.nodeVersion }}
+        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3
+        with:
+          node-version: ${{ steps.versions.outputs.nodeVersion }}
+
+      - name: Set up npm ${{ steps.versions.outputs.npmVersion }}
+        # Skip if no package.json
+        if: ${{ steps.versions.outputs.npmVersion }}
+        run: npm i -g npm@"${{ steps.versions.outputs.npmVersion }}"
+
+      - name: Build ${{ env.APP_NAME }}
+        # Skip if no package.json
+        if: ${{ steps.versions.outputs.nodeVersion }}
+        run: |
+          cd ${{ env.APP_NAME }}
+          npm ci
+          npm run build
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -36,6 +74,7 @@ jobs:
       - name: Extract version from XML
         id: extract_version
         run: |
+          cd ${{ env.APP_NAME }}
           VERSION=$(xmlstarlet sel -t -v "//image-tag" appinfo/info.xml)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
@@ -43,17 +82,12 @@ jobs:
         run: |
           echo "Extracted version: ${{ env.VERSION }}"
 
-      - name: Init repository
-        run: |
-          make init
-
       - name: Build container image
         uses: docker/build-push-action@v5
         with:
           push: true
-          no-cache: true
-          context: windmill_src
+          context: ./${{ env.APP_NAME }}
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/cloud-py-api/windmill_app:${{ env.VERSION }}
+          tags: ghcr.io/cloud-py-api/${{ env.APP_NAME }}:${{ env.VERSION }}
           build-args: |
-            VITE_BASE_URL=/index.php/apps/app_api/proxy/windmill_app
+            BUILD_TYPE=cpu
