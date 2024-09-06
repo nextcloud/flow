@@ -3,9 +3,9 @@
 import asyncio
 import contextlib
 import json
+import logging
 import os
 import random
-import re
 import string
 import typing
 from base64 import b64decode
@@ -16,17 +16,28 @@ from time import sleep
 import httpx
 from fastapi import BackgroundTasks, Depends, FastAPI, Request, responses
 from nc_py_api import NextcloudApp, NextcloudException
-from nc_py_api.ex_app import LogLvl, nc_app, persistent_storage, run_app
+from nc_py_api.ex_app import (
+    nc_app,
+    persistent_storage,
+    run_app,
+    setup_nextcloud_logging,
+)
 from nc_py_api.ex_app.integration_fastapi import AppAPIAuthMiddleware, fetch_models_task
-from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import FileResponse, Response
 
 # os.environ["NEXTCLOUD_URL"] = "http://nextcloud.local/index.php"
 # os.environ["APP_HOST"] = "0.0.0.0"
-# os.environ["APP_ID"] = "windmill_app"
+# os.environ["APP_ID"] = "flow"
 # os.environ["APP_SECRET"] = "12345"  # noqa
 # os.environ["APP_PORT"] = "23001"
 
+logging.basicConfig(
+    level=logging.WARNING,
+    format="[%(funcName)s]: %(message)s",
+    datefmt="%H:%M:%S",
+)
+LOGGER = logging.getLogger("flow")
+LOGGER.setLevel(logging.DEBUG)
 
 DEFAULT_USER_EMAIL = "admin@windmill.dev"
 USERS_STORAGE_PATH = Path(persistent_storage()).joinpath("windmill_users_config.json")
@@ -48,10 +59,11 @@ def add_user_to_storage(user_email: str, password: str, token: str = "") -> None
 
 
 async def create_user(user_name: str) -> str:
+    LOGGER.info(user_name)
     password = generate_random_string()
     user_email = get_user_email(user_name)
     async with httpx.AsyncClient() as client:
-        r = await client.request(
+        await client.request(
             method="POST",
             url="http://127.0.0.1:8000/api/users/create",
             json={
@@ -71,7 +83,7 @@ async def create_user(user_name: str) -> str:
 
 
 async def login_user(user_email: str, password: str) -> str:
-    print("login_user:DEBUG:", user_email, flush=True)
+    LOGGER.debug(user_email)
     async with httpx.AsyncClient() as client:
         r = await client.post(
             url="http://127.0.0.1:8000/api/auth/login",
@@ -83,6 +95,7 @@ async def login_user(user_email: str, password: str) -> str:
 
 
 def login_user_sync(user_email: str, password: str) -> str:
+    LOGGER.debug(user_email)
     with httpx.Client() as client:
         r = client.post(
             url="http://127.0.0.1:8000/api/auth/login",
@@ -117,39 +130,39 @@ def get_valid_user_token_sync(user_email: str) -> str:
 
 async def provision_user(request: Request, create_missing_user: bool) -> None:
     if "token" in request.cookies:
-        print(f"DEBUG: TOKEN IS PRESENT: {request.cookies['token']}", flush=True)
+        LOGGER.debug("Token is present: %s", request.cookies["token"])
         if (await check_token(request.cookies["token"])) is True:
             return
-        print(f"DEBUG: TOKEN IS INVALID: {request.cookies['token']}", flush=True)
+        LOGGER.debug("Token is invalid: %s", request.cookies["token"])
 
     user_name = get_windmill_username_from_request(request)
     if not user_name:
-        print("WARNING: provision_user: `username` is missing in the request to ExApp.", flush=True)
-        print("[DEBUG]: ", request.headers, flush=True)
+        LOGGER.debug("`username` is missing in the request to ExApp. Headers: %s", request.headers)
         return
     user_email = get_user_email(user_name)
     if user_email in USERS_STORAGE:
         windmill_token_valid = await check_token(USERS_STORAGE[user_email]["token"])
         if not USERS_STORAGE[user_email]["token"] or windmill_token_valid is False:
             if not create_missing_user:
-                print("WARNING: Do not creating user due to specified flag.", flush=True)
+                LOGGER.debug("Do not creating user due to specified flag.")
                 return
             user_password = USERS_STORAGE[user_email]["password"]
             add_user_to_storage(user_email, user_password, await login_user(user_email, user_password))
     else:
         await create_user(user_name)
     request.cookies["token"] = USERS_STORAGE[user_email]["token"]
-    print(f"DEBUG: ADDING TOKEN({request.cookies['token']}) to request", flush=True)
+    LOGGER.debug("Adding token(%s) to request", request.cookies["token"])
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    setup_nextcloud_logging("flow", logging_level=logging.WARNING)
     _t = asyncio.create_task(start_background_webhooks_syncing())  # noqa
     yield
 
 
 APP = FastAPI(lifespan=lifespan)
-APP.add_middleware(AppAPIAuthMiddleware)  # set global AppAPI authentication middleware
+APP.add_middleware(AppAPIAuthMiddleware)  # noqa
 
 
 def get_windmill_username_from_request(request: Request) -> str:
@@ -164,15 +177,14 @@ def get_windmill_username_from_request(request: Request) -> str:
 
 
 def enabled_handler(enabled: bool, nc: NextcloudApp) -> str:
-    print(f"enabled={enabled}")
     if enabled:
-        nc.log(LogLvl.WARNING, f"Hello from {nc.app_cfg.app_name} :)")
-        nc.ui.resources.set_script("top_menu", "windmill_app", "ex_app/js/windmill_app-main")
-        nc.ui.top_menu.register("windmill_app", "Workflow Engine", "ex_app/img/app.svg", True)
+        LOGGER.info("Hello from %s", nc.app_cfg.app_name)
+        nc.ui.resources.set_script("top_menu", "flow", "ex_app/js/flow-main")
+        nc.ui.top_menu.register("flow", "Workflow Engine", "ex_app/img/app.svg", True)
     else:
-        nc.log(LogLvl.WARNING, f"Bye bye from {nc.app_cfg.app_name} :(")
-        nc.ui.resources.delete_script("top_menu", "windmill_app", "ex_app/js/windmill_app-main")
-        nc.ui.top_menu.unregister("windmill_app")
+        LOGGER.info("Bye bye from %s", nc.app_cfg.app_name)
+        nc.ui.resources.delete_script("top_menu", "flow", "ex_app/js/flow-main")
+        nc.ui.top_menu.unregister("flow")
     return ""
 
 
@@ -212,11 +224,7 @@ async def proxy_request_to_windmill(request: Request, path: str, path_prefix: st
                 cookies=request.cookies,
                 content=await request.body(),
             )
-        print(
-            "proxy_request_to_windmill: ",
-            f"method={request.method}, path={path}, path_prefix={path_prefix}, status={response.status_code}",
-            flush=True,
-        )
+        LOGGER.debug("%s %s/%s -> %s", request.method, path_prefix, path, response.status_code)
         response_header = dict(response.headers)
         response_header.pop("transfer-encoding", None)
         return Response(content=response.content, status_code=response.status_code, headers=response_header)
@@ -224,18 +232,15 @@ async def proxy_request_to_windmill(request: Request, path: str, path_prefix: st
 
 @APP.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH", "TRACE"])
 async def proxy_backend_requests(request: Request, path: str):
-    print(f"proxy_BACKEND_requests: {path} - {request.method}\nCookies: {request.cookies}", flush=True)
+    LOGGER.debug("%s %s\nCookies: %s", request.method, path, request.cookies)
     await provision_user(request, False)
     return await proxy_request_to_windmill(request, path, "/api")
 
 
 @APP.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH", "TRACE"])
 async def proxy_frontend_requests(request: Request, path: str):
-    print(f"proxy_FRONTEND_requests: {path} - {request.method}\nCookies: {request.cookies}", flush=True)
+    LOGGER.debug("%s %s\nCookies: %s", request.method, path, request.cookies)
     await provision_user(request, True)
-    if path == "index.php/apps/app_api/proxy/windmill_app/":
-        raise ValueError("DEBUG: remove before release if no triggering of it")
-        # path = path.replace("index.php/apps/app_api/proxy/windmill_app/", "")
     file_server_path = ""
     if path.startswith("ex_app"):
         file_server_path = Path("../../" + path)
@@ -245,10 +250,10 @@ async def proxy_frontend_requests(request: Request, path: str):
         file_server_path = Path("/static_frontend/").joinpath(path)
 
     if file_server_path:
-        print("proxy_FRONTEND_requests: <OK> Returning: ", str(file_server_path), flush=True)
+        LOGGER.debug("proxy_FRONTEND_requests: <OK> Returning: %s", file_server_path)
         response = FileResponse(str(file_server_path))
     else:
-        print(f"proxy_FRONTEND_requests: <LOCAL FILE MISSING> Routing({path}) to the backend", flush=True)
+        LOGGER.debug("proxy_FRONTEND_requests: <LOCAL FILE MISSING> Routing(%s) to the backend", path)
         response = await proxy_request_to_windmill(request, path)
     response.headers["content-security-policy"] = "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;"
     return response
@@ -314,8 +319,8 @@ def webhooks_syncing():
     while True:
         try:
             _webhooks_syncing()
-        except Exception as e:
-            print(f"webhooks_syncing: Exception occurred! Info: {e}")
+        except Exception:  # noqa
+            LOGGER.exception("Exception occurred", stack_info=True)
             sleep(60)
 
 
@@ -328,14 +333,14 @@ def _webhooks_syncing():
             print("ExApp is disabled, sleeping for 5 minutes")
             sleep(5 * 60)
             continue
-        print("Running workflow sync")
+        LOGGER.debug("Running workflow sync")
         token = get_valid_user_token_sync(DEFAULT_USER_EMAIL)
         flow_paths = get_flow_paths(workspace, token)
-        print("webhooks_syncing(flow_paths):\n", flow_paths, flush=True)
+        LOGGER.debug("flow_paths:\n%s", flow_paths)
         expected_listeners = get_expected_listeners(workspace, token, flow_paths)
-        print("webhooks_syncing(expected_listeners):\n", json.dumps(expected_listeners, indent=4), flush=True)
+        LOGGER.debug("expected_listeners:\n%s", json.dumps(expected_listeners, indent=4))
         registered_listeners = get_registered_listeners()
-        print("get_registered_listeners: ", json.dumps(registered_listeners, indent=4), flush=True)
+        LOGGER.debug("get_registered_listeners:\n%s", json.dumps(registered_listeners, indent=4))
         for expected_listener in expected_listeners:
             expected_listener["filters"] = _preprocess_webhook_event_filter(expected_listener["filters"])
             registered_listeners_for_uri = get_registered_listeners_for_uri(
@@ -346,7 +351,7 @@ def _webhooks_syncing():
                 if listener is not None:
                     listener["eventFilter"] = _preprocess_webhook_event_filter(listener["eventFilter"])
                     if listener["eventFilter"] != expected_listener["filters"]:
-                        print("webhooks_syncing: before update_listener:", json.dumps(listener))
+                        LOGGER.debug("before update_listener:\n%s", json.dumps(listener))
                         update_listener(listener, expected_listener["filters"], token)
                 else:
                     register_listener(event, expected_listener["filters"], expected_listener["webhook"], token)
@@ -376,7 +381,6 @@ def _preprocess_webhook_event_filter(event_filter):
 def get_flow_paths(workspace: str, token: str) -> list[str]:
     method = "GET"
     path = f"w/{workspace}/flows/list"
-    print(f"sync_API_request: {path} - {method}", flush=True)
     flow_paths = []
     with httpx.Client() as client:
         url = f"http://127.0.0.1:8000/api/{path}"
@@ -387,16 +391,13 @@ def get_flow_paths(workspace: str, token: str) -> list[str]:
             params={"per_page": 100},
             headers=headers,
         )
-        print(
-            f"sync_API_request: method={method}, path={path}, status={response.status_code}",
-            flush=True,
-        )
+        LOGGER.debug("%s %s -> %s", method, path, response.status_code)
         try:
             response_data = json.loads(response.content)
             for flow in response_data:
                 flow_paths.append(flow["path"])
-        except json.JSONDecodeError as e:
-            print(f"Error parsing JSON: {e}")
+        except json.JSONDecodeError:
+            LOGGER.exception("Error parsing JSON", stack_info=True)
     return flow_paths
 
 
@@ -408,21 +409,17 @@ def get_expected_listeners(workspace: str, token: str, flow_paths: list[str]) ->
             path = f"w/{workspace}/flows/get/{flow_path}"
             url = f"http://127.0.0.1:8000/api/{path}"
             headers = {"Authorization": f"Bearer {token}"}
-            print(f"get_expected_listeners: {path} - {method}", flush=True)
             response = client.request(
                 method=method,
                 url=url,
                 params={"per_page": 100},
                 headers=headers,
             )
-            print(
-                f"get_expected_listeners: method={method}, path={path}, status={response.status_code}",
-                flush=True,
-            )
+            LOGGER.debug("%s %s -> %s", method, path, response.status_code)
             try:
                 response_data = json.loads(response.content)
-            except json.JSONDecodeError as e:
-                print(f"get_expected_listeners: Error parsing JSON: {e}")
+            except json.JSONDecodeError:
+                LOGGER.exception("Error parsing JSON", stack_info=True)
                 return []
             first_module = response_data["value"]["modules"][0]
             if (
@@ -431,7 +428,6 @@ def get_expected_listeners(workspace: str, token: str, flow_paths: list[str]) ->
                 and first_module["value"]["input_transforms"]["filters"]["type"] == "static"
             ):
                 webhook = f"/api/w/{workspace}/jobs/run/f/{flow_path}"
-                # webhook = f"https://app.windmill.dev/api/w/{workspace}/jobs/run/f/{flow_path}"
                 input_transforms = first_module["value"]["input_transforms"]
                 flows.append(
                     {
@@ -452,44 +448,41 @@ def get_registered_listeners_for_uri(webhook: str, registered_listeners: list) -
 
 
 def register_listener(event, event_filter, webhook, token: str) -> dict:
-    auth_data = {
-        "Authorization": f"Bearer {token}",
-    }
-    nc = NextcloudApp()
-    print(f"register_listener: {webhook} - {event}", flush=True)
-    print(json.dumps(event_filter, indent=4), flush=True)
+    LOGGER.debug("%s - %s: %s", webhook, event, json.dumps(event_filter, indent=4))
     try:
-        r = nc.webhooks.register(
-            "POST", webhook, event, event_filter=event_filter, auth_method="header", auth_data=auth_data
+        r = NextcloudApp().webhooks.register(
+            "POST",
+            webhook,
+            event,
+            event_filter=event_filter,
+            auth_method="header",
+            auth_data={"Authorization": f"Bearer {token}"},
         )
-    except NextcloudException as e:
-        print(f"Exception during registering webhook: {e}", flush=True)
+    except NextcloudException:
+        LOGGER.exception("Exception during registering webhook", stack_info=True)
         return {}
-    print("register_listener:\n", json.dumps(r._raw_data, indent=4), flush=True)  # noqa
+    LOGGER.debug(json.dumps(r._raw_data, indent=4))  # noqa
     return r._raw_data  # noqa
 
 
 def update_listener(registered_listener: dict, event_filter, token: str) -> dict:
-    auth_data = {
-        "Authorization": f"Bearer {token}",
-    }
-    nc = NextcloudApp()
-    print(f"update_listener: {registered_listener['uri']} - {registered_listener['event']}", flush=True)
-    print(json.dumps(event_filter, indent=4), flush=True)
+    LOGGER.debug(
+        "%s - %s: %s", registered_listener["uri"], registered_listener["event"], json.dumps(event_filter, indent=4)
+    )
     try:
-        r = nc.webhooks.update(
+        r = NextcloudApp().webhooks.update(
             registered_listener["id"],
             "POST",
             registered_listener["uri"],
             registered_listener["event"],
             event_filter=event_filter,
             auth_method="header",
-            auth_data=auth_data,
+            auth_data={"Authorization": f"Bearer {token}"},
         )
-    except NextcloudException as e:
-        print(f"Exception during updating webhook: {e}", flush=True)
+    except NextcloudException:
+        LOGGER.exception("Exception during updating webhook", stack_info=True)
         return {}
-    print("update_listener:\n", json.dumps(r._raw_data, indent=4), flush=True)  # noqa
+    LOGGER.debug(json.dumps(r._raw_data, indent=4))  # noqa
     return r._raw_data  # noqa
 
 
@@ -505,7 +498,7 @@ def get_registered_listeners():
 def delete_listener(registered_listener: dict) -> bool:
     r = NextcloudApp().webhooks.unregister(registered_listener["id"])
     if r:
-        print("delete_listener: removed registered listener with id=%d", registered_listener["id"], flush=True)
+        LOGGER.debug("removed registered listener with id=%d", registered_listener["id"])
     return r
 
 

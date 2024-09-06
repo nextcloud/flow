@@ -26,7 +26,7 @@ build-push:
 	docker login ghcr.io
 	VERSION=$$(xmlstarlet sel -t -v "//image-tag" appinfo/info.xml) && \
 	pushd windmill_src && \
-	docker buildx build --push --build-arg VITE_BASE_URL=/index.php/apps/app_api/proxy/windmill_app --platform linux/arm64/v8,linux/amd64 --tag ghcr.io/cloud-py-api/flow:$$VERSION . && \
+	docker buildx build --push --build-arg VITE_BASE_URL=/index.php/apps/app_api/proxy/flow --platform linux/arm64/v8,linux/amd64 --tag ghcr.io/cloud-py-api/flow:$$VERSION . && \
 	popd
 
 .PHONY: run30

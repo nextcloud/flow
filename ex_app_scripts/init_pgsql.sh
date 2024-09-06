@@ -4,7 +4,7 @@
 DB_NAME=${APP_ID:-windmill}
 DB_USER=${APP_ID:-windmilluser}
 DB_PASS=${APP_ID:-windmillpass}
-BASE_DIR="${APP_PERSISTENT_STORAGE:-/nc_app_windmill_data}"
+BASE_DIR="${APP_PERSISTENT_STORAGE:-/nc_app_flow_data}"
 
 # PostgreSQL version to use
 PG_VERSION=15

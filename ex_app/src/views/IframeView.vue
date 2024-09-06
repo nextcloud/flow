@@ -2,17 +2,17 @@
 	<div class="iframe-ui-viewer">
 		<iframe
 			v-show="!error && !loading"
-			id="windmill_app-iframe"
+			id="flow-iframe"
 			ref="iframe"
-			:name="'windmill_app-iframe'"
-			class="windmill_app__iframe"
+			:name="'flow-iframe'"
+			class="flow__iframe"
 			allow="clipboard-read *; clipboard-write *"
 			:src="iframeSrc" />
 		<NcLoadingIcon v-if="loading" :size="48" />
 		<NcEmptyContent
 			v-if="error && !loading"
-			:name="t('windmill_app', 'Failed to load service iframe')"
-			:description="t('windmill_app', 'Please try again.')">
+			:name="t('flow', 'Failed to load service iframe')"
+			:description="t('flow', 'Please try again.')">
 			<template #icon>
 				<AlertCircleIcon :size="20" />
 			</template>
@@ -70,7 +70,7 @@ export default {
 	height: 100%;
 }
 
-.windmill_app__iframe {
+.flow__iframe {
 	width: 100%;
 	height: 100%;
 	flex-grow: 1;

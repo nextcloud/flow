@@ -1,5 +1,5 @@
 <template>
-	<NcContent app-name="windmill_app">
+	<NcContent app-name="flow">
 		<NcAppContent>
 			<IframeView />
 		</NcAppContent>

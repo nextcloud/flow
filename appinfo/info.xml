@@ -29,7 +29,7 @@ Flow is the key to unlocking enhanced productivity in Nextcloud, designed to be 
 	<bugs>https://github.com/cloud-py-api/flow/issues</bugs>
 	<repository type="git">https://github.com/cloud-py-api/flow</repository>
 	<dependencies>
-		<nextcloud min-version="30" max-version="30"/>
+		<nextcloud min-version="30" max-version="31"/>
 	</dependencies>
 	<external-app>
 		<docker-install>

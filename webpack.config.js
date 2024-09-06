@@ -13,7 +13,7 @@ webpackConfig.stats = {
 	modules: false,
 }
 
-const appId = 'windmill_app'
+const appId = 'flow'
 
 webpackConfig.entry = {
 	main: { import: path.join(__dirname, 'ex_app', 'src', 'main.js'), filename: appId + '-main.js' },
