@@ -502,8 +502,93 @@ def delete_listener(registered_listener: dict) -> bool:
     return r
 
 
+def create_nextcloud_auth_variable() -> bool:
+    r = httpx.post(
+        url="http://127.0.0.1:8000/api/w/nextcloud/variables/create",
+        cookies={"token": USERS_STORAGE["admin@windmill.dev"]["token"]},
+        json={
+            "path": "u/admin/exapp_token",
+            "value": os.environ["APP_SECRET"],
+            "is_secret": True,
+            "is_oauth": False,
+            "description": "ExApp Authentication Variable",
+        },
+    )
+    if r.status_code >= 400:
+        LOGGER.critical("Can not create Nextcloud Auth Variable: %s %s", r.status_code, r.text)
+        return False
+    return True
+
+
+def update_nextcloud_auth_variable() -> bool:
+    r = httpx.post(
+        url="http://127.0.0.1:8000/api/w/nextcloud/variables/update/u/admin/exapp_token",
+        cookies={"token": USERS_STORAGE["admin@windmill.dev"]["token"]},
+        json={"value": os.environ["APP_SECRET"]},
+    )
+    if r.status_code >= 400:
+        LOGGER.critical("Can not update Nextcloud Auth Variable: %s %s", r.status_code, r.text)
+        return False
+    return True
+
+
+def create_nextcloud_auth_resource() -> bool:
+    r = httpx.post(
+        url="http://127.0.0.1:8000/api/w/nextcloud/resources/create",
+        cookies={"token": USERS_STORAGE["admin@windmill.dev"]["token"]},
+        json={
+            "path": "u/admin/exapp_resource",
+            "resource_type": "nextcloud",
+            "baseUrl": "unknown",
+            "description": "ExApp Authentication Resource",
+            "value": {"username": "flow_app", "password": "$var:u/admin/exapp_token"},
+        },
+    )
+    if r.status_code >= 400:
+        LOGGER.critical("Can not create Nextcloud Auth Resource: %s %s", r.status_code, r.text)
+        return False
+    return True
+
+
+def create_nextcloud_resource():
+    r = httpx.get(
+        url="http://127.0.0.1:8000/api/w/nextcloud/variables/exists/u/admin/exapp_token",
+        cookies={"token": USERS_STORAGE["admin@windmill.dev"]["token"]},
+    )
+    if r.status_code >= 400:
+        LOGGER.critical("Can not check for Nextcloud Auth Variable: %s %s", r.status_code, r.text)
+        return
+    if r.text.lower() == "false":
+        LOGGER.info("Creating Nextcloud Auth variable")
+        if create_nextcloud_auth_variable() is False:
+            return
+    else:
+        r = httpx.get(
+            url="http://127.0.0.1:8000/api/w/nextcloud/variables/get_value/u/admin/exapp_token",
+            cookies={"token": USERS_STORAGE["admin@windmill.dev"]["token"]},
+        )
+        if r.status_code >= 400:
+            LOGGER.critical("Can not get Nextcloud Auth Variable value: %s %s", r.status_code, r.text)
+            return
+        if r.text != os.environ["APP_SECRET"]:
+            LOGGER.info("Updating Nextcloud Auth variable")
+            if update_nextcloud_auth_variable() is False:
+                return
+
+    r = httpx.get(
+        url="http://127.0.0.1:8000/api/w/nextcloud/resources/exists/u/admin/exapp_resource",
+        cookies={"token": USERS_STORAGE["admin@windmill.dev"]["token"]},
+    )
+    if r.status_code >= 400:
+        LOGGER.critical("Can not check for Nextcloud Auth Resource: %s %s", r.status_code, r.text)
+    if r.text.lower() == "false":
+        LOGGER.info("Creating Nextcloud Auth Resource")
+        create_nextcloud_auth_resource()
+
+
 if __name__ == "__main__":
     initialize_windmill()
+    create_nextcloud_resource()
     # Current working dir is set for the Service we are wrapping, so change we first for ExApp default one
     os.chdir(Path(__file__).parent)
     run_app(APP, log_level="info")  # Calling wrapper around `uvicorn.run`.
