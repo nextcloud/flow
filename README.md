@@ -64,6 +64,24 @@ For users familiar with Windmill, Flow offers additional advanced features that 
 - **Custom Scripting**: Write custom scripts to add to workflows, giving you full control over your automation processes.
 - **Error Handling**: Flow includes error detection and handling mechanisms that ensure smooth execution and notify you of any issues during workflow execution.
 
+## FAQ
+
+### Specific environment options to control ExApp behavior
+
+> [!NOTE]  
+> Currently, AppAPI supports setting environment variables only globally for DeployDaemon and not for specific ExApps.
+> 
+> Support for setting custom environment variables during ExApp deployment is expected to arrive with Nextcloud 31.
+> 
+> When you set or change an environment option, it is necessary to reinstall the ExApp, as environment options affect only new installations.
+
+**Q: How can I control the number of Windmill workers?**  
+**A:** You can set the `NUM_WORKERS` environment variable. The default value is `number_of_cpu_cores * 2`.
+
+**Q: I want to use an external PGSQL database instead of the bundled one in the container. Can I?**  
+**A:** Yes, this is supported starting from version `Flow 1.1.0`. You can configure it by setting the `DATABASE_URI` environment variable in the following format:  
+`postgres://DB_USER:DB_PASS@localhost:5432/DB_NAME`.
+
 ## Contributing
 
 We welcome contributions from the community! If you're interested in helping improve Flow, please feel free to submit a pull request or open an issue on our GitHub repository. We’re constantly working to improve the functionality and capabilities of Flow, and your feedback is invaluable.
