@@ -185,6 +185,7 @@ def enabled_handler(enabled: bool, nc: NextcloudApp) -> str:
         LOGGER.info("Bye bye from %s", nc.app_cfg.app_name)
         nc.ui.resources.delete_script("top_menu", "flow", "ex_app/js/flow-main")
         nc.ui.top_menu.unregister("flow")
+        nc.webhooks.unregister_all()
     return ""
 
 
