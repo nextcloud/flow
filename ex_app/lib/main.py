@@ -422,6 +422,9 @@ def get_expected_listeners(workspace: str, token: str, flow_paths: list[str]) ->
             except json.JSONDecodeError:
                 LOGGER.exception("Error parsing JSON", stack_info=True)
                 return []
+            if not response_data["value"].get("modules", []):
+                LOGGER.debug("Flow %s has no modules in it, skipping,", flow_path)
+                return flows
             first_module = response_data["value"]["modules"][0]
             if (
                 first_module.get("summary", "") == "CORE:LISTEN_TO_EVENT"

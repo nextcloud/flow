@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Unregister webhooks from the Nextcloud instance during ExApp disabling.
+- Incorrect handling Windmill scripts with no modules in it. #11
+- Unregister webhooks from the Nextcloud instance during ExApp disabling. #10
 
 ## [1.0.0 - 2024-09-13]
 
