@@ -3,6 +3,15 @@
 # Read environment variables
 . /etc/environment
 
+# Ensure hostname is in /etc/hosts
+HOSTNAME=$(cat /etc/hostname)
+if ! grep -q "$HOSTNAME" /etc/hosts; then
+    echo "127.0.0.1   $HOSTNAME" >> /etc/hosts
+    echo "Added $HOSTNAME to /etc/hosts"
+else
+    echo "$HOSTNAME is already in /etc/hosts"
+fi
+
 # Execute the custom scripts
 /ex_app_scripts/init_pgsql.sh
 /ex_app_scripts/set_workers_num.sh
