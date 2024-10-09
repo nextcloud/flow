@@ -1,10 +1,11 @@
 #!/bin/sh
 
+# Read environment variables
+. /etc/environment
+
 # Execute the custom scripts
 /ex_app_scripts/init_pgsql.sh
 /ex_app_scripts/set_workers_num.sh
-
-. /etc/environment
 
 # Run all arguments after "first" in the background
 main_command=$1

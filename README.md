@@ -68,18 +68,15 @@ For users familiar with Windmill, Flow offers additional advanced features that 
 
 ### Specific environment options to control ExApp behavior
 
-> [!NOTE]  
-> Currently, AppAPI supports setting environment variables only globally for DeployDaemon and not for specific ExApps.
-> 
-> Support for setting custom environment variables during ExApp deployment is expected to arrive with Nextcloud 31.
-> 
-> When you set or change an environment option, it is necessary to reinstall the ExApp, as environment options affect only new installations.
+> [!NOTE]
+>
+> This is only supported starting from Nextcloud version `30.0.2` and `Flow 1.1.0` version 
 
 **Q: How can I control the number of Windmill workers?**  
 **A:** You can set the `NUM_WORKERS` environment variable. The default value is `number_of_cpu_cores * 2`.
 
 **Q: I want to use an external PGSQL database instead of the bundled one in the container. Can I?**  
-**A:** Yes, this is supported starting from version `Flow 1.1.0`. You can configure it by setting the `DATABASE_URI` environment variable in the following format:  
+**A:** You can configure it by setting the `DATABASE_URI` environment variable in the following format:  
 `postgres://DB_USER:DB_PASS@localhost:5432/DB_NAME`.
 
 ## Contributing
