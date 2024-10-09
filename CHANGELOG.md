@@ -9,13 +9,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- More logging for faster problem diagnosis. #12
+- More logging for faster problem diagnosis. [commit](https://github.com/cloud-py-api/flow/commit/e52c501144761e73b81b156423af034c191797aa)
 
 ### Fixed
 
 - Warning "sudo: unable to resolve host" during container startup. #11
 - Incorrect handling Windmill scripts with no modules in it. [commit](https://github.com/cloud-py-api/flow/commit/c8bf8309e85b14c2b36913469a38291f2c480b53)
 - Unregister webhooks from the Nextcloud instance during ExApp disabling. #10
+- Updated NPM packages. #12
 
 ## [1.0.0 - 2024-09-13]
 
