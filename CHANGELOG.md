@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [1.0.1 - 2024-10-10]
 
+### Added
+
+- More logging for faster problem diagnosis. #12
+
 ### Fixed
 
 - Warning "sudo: unable to resolve host" during container startup. #11

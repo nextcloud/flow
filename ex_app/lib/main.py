@@ -90,6 +90,7 @@ async def login_user(user_email: str, password: str) -> str:
             json={"email": user_email, "password": password},
         )
         if r.status_code >= 400:
+            LOGGER.error("login_user(%s) error: %s", user_email, r.text)
             raise RuntimeError(f"login_user: {r.text}")
         return r.text
 
@@ -102,6 +103,7 @@ def login_user_sync(user_email: str, password: str) -> str:
             json={"email": user_email, "password": password},
         )
         if r.status_code >= 400:
+            LOGGER.error("login_user(%s) error: %s", user_email, r.text)
             raise RuntimeError(f"login_user: {r.text}")
         return r.text
 
@@ -261,16 +263,17 @@ async def proxy_frontend_requests(request: Request, path: str):
 
 
 def initialize_windmill() -> None:
+    while True:  # Let's wait until Windmill opens the port.
+        with contextlib.suppress(httpx.ReadError, httpx.ConnectError, httpx.RemoteProtocolError):
+            r = httpx.get("http://127.0.0.1:8000/api/users/whoami")
+            if r.status_code in (401, 403):
+                break
     if not USERS_STORAGE_PATH.exists():
-        while True:  # Let's wait until Windmill opens the port.
-            with contextlib.suppress(httpx.ReadError, httpx.ConnectError, httpx.RemoteProtocolError):
-                r = httpx.get("http://127.0.0.1:8000/api/users/whoami")
-                if r.status_code in (401, 403):
-                    break
         r = httpx.post(
             url="http://127.0.0.1:8000/api/auth/login", json={"email": "admin@windmill.dev", "password": "changeme"}
         )
         if r.status_code >= 400:
+            LOGGER.error("initialize_windmill: can not login with default credentials: %s", r.text)
             raise RuntimeError(f"initialize_windmill: can not login with default credentials, {r.text}")
         default_token = r.text
         new_default_password = generate_random_string()
@@ -280,6 +283,7 @@ def initialize_windmill() -> None:
             cookies={"token": default_token},
         )
         if r.status_code >= 400:
+            LOGGER.error("initialize_windmill: can not change default credentials password: %s", r.text)
             raise RuntimeError(f"initialize_windmill: can not change default credentials password, {r.text}")
         add_user_to_storage(DEFAULT_USER_EMAIL, new_default_password, default_token)
         r = httpx.post(
@@ -288,6 +292,7 @@ def initialize_windmill() -> None:
             cookies={"token": default_token},
         )
         if r.status_code >= 400:
+            LOGGER.error("initialize_windmill: can not create persistent token: %s", r.text)
             raise RuntimeError(f"initialize_windmill: can not create persistent token, {r.text}")
         default_token = r.text
         add_user_to_storage(DEFAULT_USER_EMAIL, new_default_password, default_token)
@@ -297,6 +302,7 @@ def initialize_windmill() -> None:
             cookies={"token": default_token},
         )
         if r.status_code >= 400:
+            LOGGER.error("initialize_windmill: can not create default workspace: %s", r.text)
             raise RuntimeError(f"initialize_windmill: can not create default workspace, {r.text}")
         r = httpx.post(
             url="http://127.0.0.1:8000/api/w/nextcloud/workspaces/edit_auto_invite",
@@ -304,6 +310,7 @@ def initialize_windmill() -> None:
             cookies={"token": default_token},
         )
         if r.status_code >= 400:
+            LOGGER.error("initialize_windmill: can not create default workspace: %s", r.text)
             raise RuntimeError(f"initialize_windmill: can not create default workspace, {r.text}")
 
 
