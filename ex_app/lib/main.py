@@ -49,6 +49,7 @@ if USERS_STORAGE_PATH.exists():
 
 
 def get_user_email(user_name: str) -> str:
+    user_name = user_name.replace(" ", "__UNIQUE_SPACE__")
     return f"{user_name}@windmill.dev"
 
 
