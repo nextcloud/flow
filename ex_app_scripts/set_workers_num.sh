@@ -10,9 +10,6 @@ if [ -z "$NUM_WORKERS" ]; then
     fi
 
     echo "NUM_WORKERS was not set. It is now set to: $NUM_WORKERS"
-
-    # Reload environment variables
-    . /etc/environment
 else
     echo "NUM_WORKERS is already set to: $NUM_WORKERS"
 fi

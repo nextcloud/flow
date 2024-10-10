@@ -16,6 +16,9 @@ fi
 /ex_app_scripts/init_pgsql.sh
 /ex_app_scripts/set_workers_num.sh
 
+# Reloading environment variables to reflect changes if were
+. /etc/environment
+
 # Run all arguments after "first" in the background
 main_command=$1
 shift  # Remove the first argument, which is "the name of main binary"

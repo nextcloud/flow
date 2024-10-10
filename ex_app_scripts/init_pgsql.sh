@@ -79,9 +79,6 @@ else
         fi
 
         echo "DATABASE_URL was not set. It is now set to: $DATABASE_URL"
-
-        # Reload environment variables
-        . /etc/environment
     else
         echo "DATABASE_URL is already set to: $DATABASE_URL"
     fi
