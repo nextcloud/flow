@@ -7,7 +7,7 @@ preview = true
 line-length = 120
 target-version = "py310"
 lint.select = ["A", "B", "C", "D", "E", "F", "G", "I", "S", "SIM", "PIE", "Q", "RET", "RUF", "UP" , "W"]
-lint.extend-ignore = ["D101", "D102", "D103", "D105", "D107", "D203", "D213", "D401", "I001", "RUF100", "D400", "D415"]
+lint.extend-ignore = ["D101", "D102", "D103", "D105", "D107", "D203", "D213", "D401", "I001", "RUF100", "D400", "D415", "S105"]
 
 [tool.isort]
 profile = "black"
