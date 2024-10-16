@@ -59,7 +59,7 @@ For users familiar with Windmill, Flow offers additional advanced features that 
 **A:** You can set the `NUM_WORKERS` environment variable. The default value is `number_of_cpu_cores * 2`.
 
 **Q: I want to use an external PostgreSQL database instead of the bundled one in the container. Can I?**
-**A:** Yes, you can configure it by setting the `DATABASE_URI` environment variable in the following format:
+**A:** Yes, you can configure it by setting the `EXTERNAL_DATABASE` environment variable in the following format:
 `postgres://DB_USER:DB_PASS@localhost:5432/DB_NAME`
 
 ### Manual Deployment

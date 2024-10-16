@@ -14,15 +14,15 @@ PG_SQL="/usr/lib/postgresql/${PG_VERSION}/bin/psql"
 # Define the PostgreSQL data directory
 DATA_DIR="${BASE_DIR}/pgsql"
 
-# Check if DATABASE_URI is set for external database usage
-if [ -n "${DATABASE_URI}" ]; then
-    # Use external database by setting DATABASE_URL to DATABASE_URI
-    DATABASE_URL="${DATABASE_URI}"
+# Check if EXTERNAL_DATABASE is set for external database usage
+if [ -n "${EXTERNAL_DATABASE}" ]; then
+    # Use external database by setting DATABASE_URL to EXTERNAL_DATABASE
+    DATABASE_URL="${EXTERNAL_DATABASE}"
     echo "Using external database. DATABASE_URL is set to: $DATABASE_URL"
 
     # Check if DATABASE_URL is already in /etc/environment, if not, add it
     if ! grep -q "^export DATABASE_URL=" /etc/environment; then
-        echo "export DATABASE_URL=\"$DATABASE_URI\"" >> /etc/environment
+        echo "export DATABASE_URL=\"$EXTERNAL_DATABASE\"" >> /etc/environment
     fi
 
     # Reload environment variables
