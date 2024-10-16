@@ -65,7 +65,7 @@ For users familiar with Windmill, Flow offers additional advanced features that 
 ### Manual Deployment
 
 > **Note:**
-> 
+>
 > This method can also be used for enterprise or custom scaled Windmill setups.
 
 **Prerequisites:**
