@@ -25,11 +25,20 @@ from nc_py_api.ex_app import (
 from nc_py_api.ex_app.integration_fastapi import AppAPIAuthMiddleware, fetch_models_task
 from starlette.responses import FileResponse, Response
 
+# ---------Start of configuration values for manual deploy---------
+
+# Uncommenting the following lines may be useful when installing manually.
+
 # os.environ["NEXTCLOUD_URL"] = "http://nextcloud.local/index.php"
 # os.environ["APP_HOST"] = "0.0.0.0"
+# os.environ["APP_PORT"] = "24000"
 # os.environ["APP_ID"] = "flow"
 # os.environ["APP_SECRET"] = "12345"  # noqa
-# os.environ["APP_PORT"] = "23001"
+
+WINDMILL_URL = os.environ.get("WINDMILL_URL", "http://127.0.0.1:8000")
+# WINDMILL_URL = "http://localhost:85"  # uncomment this for dev(Windmill should be avalaible at port 85)
+
+# ---------Enf of configuration values for manual deploy---------
 
 logging.basicConfig(
     level=logging.WARNING,
@@ -40,12 +49,19 @@ LOGGER = logging.getLogger("flow")
 LOGGER.setLevel(logging.DEBUG)
 
 DEFAULT_USER_EMAIL = "admin@windmill.dev"
+DEFAULT_USER_PASSWORD = "changeme"
 USERS_STORAGE_PATH = Path(persistent_storage()).joinpath("windmill_users_config.json")
 USERS_STORAGE = {}
 print("[DEBUG]: USERS_STORAGE_PATH=", str(USERS_STORAGE_PATH), flush=True)
 if USERS_STORAGE_PATH.exists():
     with open(USERS_STORAGE_PATH, encoding="utf-8") as __f:
         USERS_STORAGE.update(json.load(__f))
+
+PROJECT_ROOT_FOLDER = Path(__file__).parent.parent.parent
+STATIC_FRONTEND_FOLDER = PROJECT_ROOT_FOLDER.joinpath("static_frontend")
+STATIC_FRONTEND_PRESENT = STATIC_FRONTEND_FOLDER.is_dir()
+print("[DEBUG]: PROJECT_ROOT_FOLDER=", PROJECT_ROOT_FOLDER, flush=True)
+print("[DEBUG]: STATIC_FRONTEND_PRESENT=", STATIC_FRONTEND_PRESENT, flush=True)
 
 
 def get_user_email(user_name: str) -> str:
@@ -66,17 +82,17 @@ async def create_user(user_name: str) -> str:
     async with httpx.AsyncClient() as client:
         await client.request(
             method="POST",
-            url="http://127.0.0.1:8000/api/users/create",
+            url=f"{WINDMILL_URL}/api/users/create",
             json={
                 "email": user_email,
                 "password": password,
                 "super_admin": True,
                 "name": user_name,
             },
-            cookies={"token": USERS_STORAGE["admin@windmill.dev"]["token"]},
+            cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
         )
         r = await client.post(
-            url="http://127.0.0.1:8000/api/auth/login",
+            url=f"{WINDMILL_URL}/api/auth/login",
             json={"email": user_email, "password": password},
         )
         add_user_to_storage(user_email, password, r.text)
@@ -87,7 +103,7 @@ async def login_user(user_email: str, password: str) -> str:
     LOGGER.debug(user_email)
     async with httpx.AsyncClient() as client:
         r = await client.post(
-            url="http://127.0.0.1:8000/api/auth/login",
+            url=f"{WINDMILL_URL}/api/auth/login",
             json={"email": user_email, "password": password},
         )
         if r.status_code >= 400:
@@ -100,7 +116,7 @@ def login_user_sync(user_email: str, password: str) -> str:
     LOGGER.debug(user_email)
     with httpx.Client() as client:
         r = client.post(
-            url="http://127.0.0.1:8000/api/auth/login",
+            url=f"{WINDMILL_URL}/api/auth/login",
             json={"email": user_email, "password": password},
         )
         if r.status_code >= 400:
@@ -111,13 +127,13 @@ def login_user_sync(user_email: str, password: str) -> str:
 
 async def check_token(token: str) -> bool:
     async with httpx.AsyncClient() as client:
-        r = await client.get("http://127.0.0.1:8000/api/users/whoami", cookies={"token": token})
+        r = await client.get(f"{WINDMILL_URL}/api/users/whoami", cookies={"token": token})
         return bool(r.status_code < 400)
 
 
 def check_token_sync(token: str) -> bool:
     with httpx.Client() as client:
-        r = client.get("http://127.0.0.1:8000/api/users/whoami", cookies={"token": token})
+        r = client.get(f"{WINDMILL_URL}/api/users/whoami", cookies={"token": token})
         return bool(r.status_code < 400)
 
 
@@ -210,7 +226,7 @@ def enabled_callback(enabled: bool, nc: typing.Annotated[NextcloudApp, Depends(n
 
 async def proxy_request_to_windmill(request: Request, path: str, path_prefix: str = ""):
     async with httpx.AsyncClient() as client:
-        url = f"http://127.0.0.1:8000{path_prefix}/{path}"
+        url = f"{WINDMILL_URL}{path_prefix}/{path}"
         headers = {key: value for key, value in request.headers.items() if key.lower() not in ("host", "cookie")}
         if request.method == "GET":
             response = await client.get(
@@ -247,17 +263,19 @@ async def proxy_frontend_requests(request: Request, path: str):
     await provision_user(request, True)
     file_server_path = ""
     if path.startswith("ex_app"):
-        file_server_path = Path("../../" + path)
-    elif not path:
-        file_server_path = Path("/static_frontend/200.html").joinpath(path)
-    elif Path("/static_frontend/").joinpath(path).is_file():
-        file_server_path = Path("/static_frontend/").joinpath(path)
+        file_server_path = PROJECT_ROOT_FOLDER.joinpath(path)
+    elif STATIC_FRONTEND_PRESENT:
+        if not path:
+            file_server_path = STATIC_FRONTEND_FOLDER.joinpath("200.html")
+        elif STATIC_FRONTEND_FOLDER.joinpath(path).is_file():
+            file_server_path = STATIC_FRONTEND_FOLDER.joinpath(path)
 
     if file_server_path:
         LOGGER.debug("proxy_FRONTEND_requests: <OK> Returning: %s", file_server_path)
         response = FileResponse(str(file_server_path))
     else:
-        LOGGER.debug("proxy_FRONTEND_requests: <LOCAL FILE MISSING> Routing(%s) to the backend", path)
+        if STATIC_FRONTEND_PRESENT:
+            LOGGER.debug("proxy_FRONTEND_requests: <LOCAL FILE MISSING> Routing(%s) to the backend", path)
         response = await proxy_request_to_windmill(request, path)
     response.headers["content-security-policy"] = "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;"
     return response
@@ -266,12 +284,12 @@ async def proxy_frontend_requests(request: Request, path: str):
 def initialize_windmill() -> None:
     while True:  # Let's wait until Windmill opens the port.
         with contextlib.suppress(httpx.ReadError, httpx.ConnectError, httpx.RemoteProtocolError):
-            r = httpx.get("http://127.0.0.1:8000/api/users/whoami")
+            r = httpx.get(f"{WINDMILL_URL}/api/users/whoami")
             if r.status_code in (401, 403):
                 break
     if not USERS_STORAGE_PATH.exists():
         r = httpx.post(
-            url="http://127.0.0.1:8000/api/auth/login", json={"email": "admin@windmill.dev", "password": "changeme"}
+            url=f"{WINDMILL_URL}/api/auth/login", json={"email": DEFAULT_USER_EMAIL, "password": DEFAULT_USER_PASSWORD}
         )
         if r.status_code >= 400:
             LOGGER.error("initialize_windmill: can not login with default credentials: %s", r.text)
@@ -279,7 +297,7 @@ def initialize_windmill() -> None:
         default_token = r.text
         new_default_password = generate_random_string()
         r = httpx.post(
-            url="http://127.0.0.1:8000/api/users/setpassword",
+            url=f"{WINDMILL_URL}/api/users/setpassword",
             json={"password": new_default_password},
             cookies={"token": default_token},
         )
@@ -288,7 +306,7 @@ def initialize_windmill() -> None:
             raise RuntimeError(f"initialize_windmill: can not change default credentials password, {r.text}")
         add_user_to_storage(DEFAULT_USER_EMAIL, new_default_password, default_token)
         r = httpx.post(
-            url="http://127.0.0.1:8000/api/users/tokens/create",
+            url=f"{WINDMILL_URL}/api/users/tokens/create",
             json={"label": "NC_PERSISTENT"},
             cookies={"token": default_token},
         )
@@ -298,7 +316,7 @@ def initialize_windmill() -> None:
         default_token = r.text
         add_user_to_storage(DEFAULT_USER_EMAIL, new_default_password, default_token)
         r = httpx.post(
-            url="http://127.0.0.1:8000/api/workspaces/create",
+            url=f"{WINDMILL_URL}/api/workspaces/create",
             json={"id": "nextcloud", "name": "nextcloud"},
             cookies={"token": default_token},
         )
@@ -306,7 +324,7 @@ def initialize_windmill() -> None:
             LOGGER.error("initialize_windmill: can not create default workspace: %s", r.text)
             raise RuntimeError(f"initialize_windmill: can not create default workspace, {r.text}")
         r = httpx.post(
-            url="http://127.0.0.1:8000/api/w/nextcloud/workspaces/edit_auto_invite",
+            url=f"{WINDMILL_URL}/api/w/nextcloud/workspaces/edit_auto_invite",
             json={"operator": False, "invite_all": True, "auto_add": True},
             cookies={"token": default_token},
         )
@@ -392,7 +410,7 @@ def get_flow_paths(workspace: str, token: str) -> list[str]:
     path = f"w/{workspace}/flows/list"
     flow_paths = []
     with httpx.Client() as client:
-        url = f"http://127.0.0.1:8000/api/{path}"
+        url = f"{WINDMILL_URL}/api/{path}"
         headers = {"Authorization": f"Bearer {token}"}
         response = client.request(
             method=method,
@@ -416,7 +434,7 @@ def get_expected_listeners(workspace: str, token: str, flow_paths: list[str]) ->
         with httpx.Client() as client:
             method = "GET"
             path = f"w/{workspace}/flows/get/{flow_path}"
-            url = f"http://127.0.0.1:8000/api/{path}"
+            url = f"{WINDMILL_URL}/api/{path}"
             headers = {"Authorization": f"Bearer {token}"}
             response = client.request(
                 method=method,
@@ -516,8 +534,8 @@ def delete_listener(registered_listener: dict) -> bool:
 
 def create_nextcloud_auth_variable() -> bool:
     r = httpx.post(
-        url="http://127.0.0.1:8000/api/w/nextcloud/variables/create",
-        cookies={"token": USERS_STORAGE["admin@windmill.dev"]["token"]},
+        url=f"{WINDMILL_URL}/api/w/nextcloud/variables/create",
+        cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
         json={
             "path": "u/admin/exapp_token",
             "value": os.environ["APP_SECRET"],
@@ -534,8 +552,8 @@ def create_nextcloud_auth_variable() -> bool:
 
 def update_nextcloud_auth_variable() -> bool:
     r = httpx.post(
-        url="http://127.0.0.1:8000/api/w/nextcloud/variables/update/u/admin/exapp_token",
-        cookies={"token": USERS_STORAGE["admin@windmill.dev"]["token"]},
+        url=f"{WINDMILL_URL}/api/w/nextcloud/variables/update/u/admin/exapp_token",
+        cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
         json={"value": os.environ["APP_SECRET"]},
     )
     if r.status_code >= 400:
@@ -546,8 +564,8 @@ def update_nextcloud_auth_variable() -> bool:
 
 def create_nextcloud_auth_resource() -> bool:
     r = httpx.post(
-        url="http://127.0.0.1:8000/api/w/nextcloud/resources/create",
-        cookies={"token": USERS_STORAGE["admin@windmill.dev"]["token"]},
+        url=f"{WINDMILL_URL}/api/w/nextcloud/resources/create",
+        cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
         json={
             "path": "u/admin/exapp_resource",
             "resource_type": "nextcloud",
@@ -564,8 +582,8 @@ def create_nextcloud_auth_resource() -> bool:
 
 def create_nextcloud_resource():
     r = httpx.get(
-        url="http://127.0.0.1:8000/api/w/nextcloud/variables/exists/u/admin/exapp_token",
-        cookies={"token": USERS_STORAGE["admin@windmill.dev"]["token"]},
+        url=f"{WINDMILL_URL}/api/w/nextcloud/variables/exists/u/admin/exapp_token",
+        cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
     )
     if r.status_code >= 400:
         LOGGER.critical("Can not check for Nextcloud Auth Variable: %s %s", r.status_code, r.text)
@@ -576,8 +594,8 @@ def create_nextcloud_resource():
             return
     else:
         r = httpx.get(
-            url="http://127.0.0.1:8000/api/w/nextcloud/variables/get_value/u/admin/exapp_token",
-            cookies={"token": USERS_STORAGE["admin@windmill.dev"]["token"]},
+            url=f"{WINDMILL_URL}/api/w/nextcloud/variables/get_value/u/admin/exapp_token",
+            cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
         )
         if r.status_code >= 400:
             LOGGER.critical("Can not get Nextcloud Auth Variable value: %s %s", r.status_code, r.text)
@@ -588,8 +606,8 @@ def create_nextcloud_resource():
                 return
 
     r = httpx.get(
-        url="http://127.0.0.1:8000/api/w/nextcloud/resources/exists/u/admin/exapp_resource",
-        cookies={"token": USERS_STORAGE["admin@windmill.dev"]["token"]},
+        url=f"{WINDMILL_URL}/api/w/nextcloud/resources/exists/u/admin/exapp_resource",
+        cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
     )
     if r.status_code >= 400:
         LOGGER.critical("Can not check for Nextcloud Auth Resource: %s %s", r.status_code, r.text)

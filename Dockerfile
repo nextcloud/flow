@@ -45,6 +45,8 @@ ENV NODE_OPTIONS "--max-old-space-size=8192"
 ARG VITE_BASE_URL ""
 RUN npm run build
 
+FROM scratch AS export_frontend
+COPY --from=frontend /frontend/build/ /
 
 FROM rust_base AS planner
 
