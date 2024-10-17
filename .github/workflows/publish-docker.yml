@@ -6,8 +6,8 @@ on:
 jobs:
   push_to_registry:
     name: Build image
-    runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'cloud-py-api' }}
+    runs-on: ubuntu-22.04
+    if: ${{ github.repository_owner == 'nextcloud' }}
     permissions:
       packages: write
       contents: read
@@ -88,6 +88,6 @@ jobs:
           push: true
           context: ./${{ env.APP_NAME }}
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/cloud-py-api/${{ env.APP_NAME }}:${{ env.VERSION }}
+          tags: ghcr.io/nextcloud/${{ env.APP_NAME }}:${{ env.VERSION }}
           build-args: |
             BUILD_TYPE=cpu

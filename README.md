@@ -85,7 +85,7 @@ Follow these steps to manually deploy Flow without Docker:
    Clone the Flow repository:
 
    ```bash
-   git clone https://github.com/cloud-py-api/flow.git
+   git clone https://github.com/nextcloud/flow.git
    ```
 
    Navigate into the cloned directory, create a Python virtual environment, and install the required dependencies:

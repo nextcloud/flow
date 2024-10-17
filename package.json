@@ -2,13 +2,13 @@
   "name": "flow",
   "description": "Workflow Engine in your Nextcloud",
   "version": "1.0.0",
-  "homepage": "https://github.com/cloud-py-api/flow",
+  "homepage": "https://github.com/nextcloud/flow",
   "bugs": {
-    "url": "https://github.com/cloud-py-api/flow/issues"
+    "url": "https://github.com/nextcloud/flow/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cloud-py-api/flow"
+    "url": "https://github.com/nextcloud/flow"
   },
   "license": "mit",
   "private": true,

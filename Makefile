@@ -1,20 +1,32 @@
 .DEFAULT_GOAL := help
 
+APP_ID := flow
+APP_NAME := Flow
+APP_VERSION := $$(xmlstarlet sel -t -v "//version" appinfo/info.xml)
+JSON_INFO := "{\"id\":\"$(APP_ID)\",\"name\":\"$(APP_NAME)\",\"daemon_config_name\":\"manual_install\",\"version\":\"$(APP_VERSION)\",\"secret\":\"12345\",\"port\":24000, \"routes\": [{\"url\":\"^api\\\/w\\\/nextcloud\\\/jobs\\\/.*\", \"verb\":\"GET, POST, PUT, DELETE\", \"access_level\":0, \"headers_to_exclude\":[], \"bruteforce_protection\":[401]}, {\"url\":\"^api\\\/w\\\/nextcloud\\\/jobs_u\\\/.*\", \"verb\":\"GET, POST, PUT, DELETE\", \"access_level\":0, \"headers_to_exclude\":[], \"bruteforce_protection\":[401]}, {\"url\":\".*\", \"verb\":\"GET, POST, PUT, DELETE\", \"access_level\":2, \"headers_to_exclude\":[]}]}"
+
+
 .PHONY: help
 help:
-	@echo "Welcome to WorkflowEngine project. Please use \`make <target>\` where <target> is one of"
+	@echo "  Welcome to $(APP_NAME) $(APP_VERSION)!"
 	@echo " "
-	@echo "  Next commands are only for dev environment with nextcloud-docker-dev!"
-	@echo "  They should run from the host you are developing on(with activated venv) and not in the container with Nextcloud!"
-	@echo "  "
-	@echo "  init        	   clone Windmill repository to the 'windmill_src' folder and copy ExApp files inside it"
-	@echo "  build-push        build image and upload to ghcr.io"
-	@echo "  "
-	@echo "  run30             install Flow App for Nextcloud 30"
-	@echo "  run               install Flow App for Nextcloud Last"
-	@echo "  "
-	@echo "  static_frontend   build Windmill static frontend for Manual Installation"
-	@echo "  register30        register manually running Flow App into Nextcloud"
+	@echo "  Please use \`make <target>\` where <target> is one of"
+	@echo " "
+	@echo "  init              clones Windmill repo to 'windmill_src' folder and copy ExApp inside it"
+	@echo "  static_frontend   builds Windmill's 'static_frontend' folder for 'manual_install'"
+	@echo "  build-push        builds app docker image and uploads it to ghcr.io"
+	@echo " "
+	@echo "  > Next commands are only for the dev environment with nextcloud-docker-dev!"
+	@echo "  > They should run from the host you are developing on(with activated venv) and not in the container with Nextcloud!"
+	@echo " "
+	@echo "  run30             installs $(APP_NAME) for Nextcloud 30"
+	@echo "  run               installs $(APP_NAME) for Nextcloud Latest"
+	@echo " "
+	@echo "  > Commands for manual registration of ExApp($(APP_NAME) should be running!):"
+	@echo " "
+	@echo "  register30        performs registration of running $(APP_NAME) into the 'manual_install' deploy daemon."
+	@echo "  register          performs registration of running $(APP_NAME) into the 'manual_install' deploy daemon."
+
 
 .PHONY: init
 init:
@@ -39,33 +51,28 @@ static_frontend:
 .PHONY: build-push
 build-push:
 	docker login ghcr.io
-	VERSION=$$(xmlstarlet sel -t -v "//image-tag" appinfo/info.xml) && \
 	pushd windmill_src && \
-	docker buildx build --push --build-arg VITE_BASE_URL=/index.php/apps/app_api/proxy/flow --platform linux/arm64/v8,linux/amd64 --tag ghcr.io/cloud-py-api/flow:$$VERSION . && \
+	docker buildx build --push --build-arg VITE_BASE_URL=/index.php/apps/app_api/proxy/flow --platform linux/arm64/v8,linux/amd64 --tag ghcr.io/nextcloud/$(APP_ID):$(VISIONATRIX_VERSION) . && \
 	popd
 
 .PHONY: run30
 run30:
-	docker exec master-stable30-1 sudo -u www-data php occ app_api:app:unregister flow --silent --force || true
-	docker exec master-stable30-1 sudo -u www-data php occ app_api:app:register flow \
-		--info-xml https://raw.githubusercontent.com/cloud-py-api/flow/main/appinfo/info.xml
+	docker exec master-stable30-1 sudo -u www-data php occ app_api:app:unregister $(APP_ID) --silent --force || true
+	docker exec master-stable30-1 sudo -u www-data php occ app_api:app:register $(APP_ID) \
+		--info-xml https://raw.githubusercontent.com/nextcloud/$(APP_ID)/main/appinfo/info.xml
 
 .PHONY: run
 run:
-	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:unregister flow --silent --force || true
-	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:register flow \
-		--info-xml https://raw.githubusercontent.com/cloud-py-api/flow/main/appinfo/info.xml
+	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:unregister $(APP_ID) --silent --force || true
+	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:register $(APP_ID) \
+		--info-xml https://raw.githubusercontent.com/nextcloud/$(APP_ID)/main/appinfo/info.xml
 
 .PHONY: register30
 register30:
-	docker exec master-stable30-1 sudo -u www-data php occ app_api:app:unregister flow --silent --force || true
-	docker exec master-stable30-1 sudo -u www-data php occ app_api:app:register flow manual_install --json-info \
-  "{\"id\":\"flow\",\"name\":\"Flow\",\"daemon_config_name\":\"manual_install\",\"version\":\"1.0.0\",\"secret\":\"12345\",\"port\":24000, \"routes\": [{\"url\":\"^api\\\/w\\\/nextcloud\\\/jobs\\\/.*\", \"verb\":\"GET, POST, PUT, DELETE\", \"access_level\":0, \"headers_to_exclude\":[], \"bruteforce_protection\":[401]}, {\"url\":\"^api\\\/w\\\/nextcloud\\\/jobs_u\\\/.*\", \"verb\":\"GET, POST, PUT, DELETE\", \"access_level\":0, \"headers_to_exclude\":[], \"bruteforce_protection\":[401]}, {\"url\":\".*\", \"verb\":\"GET, POST, PUT, DELETE\", \"access_level\":2, \"headers_to_exclude\":[]}]}" \
-  --wait-finish
+	docker exec master-stable30-1 sudo -u www-data php occ app_api:app:unregister $(APP_ID) --silent --force || true
+	docker exec master-stable30-1 sudo -u www-data php occ app_api:app:register $(APP_ID) manual_install --json-info $(JSON_INFO) --wait-finish
 
 .PHONY: register
 register:
-	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:unregister flow --silent --force || true
-	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:register flow manual_install --json-info \
-  "{\"id\":\"flow\",\"name\":\"Flow\",\"daemon_config_name\":\"manual_install\",\"version\":\"1.0.0\",\"secret\":\"12345\",\"port\":24000, \"routes\": [{\"url\":\"^api\\\/w\\\/nextcloud\\\/jobs\\\/.*\", \"verb\":\"GET, POST, PUT, DELETE\", \"access_level\":0, \"headers_to_exclude\":[], \"bruteforce_protection\":[401]}, {\"url\":\"^api\\\/w\\\/nextcloud\\\/jobs_u\\\/.*\", \"verb\":\"GET, POST, PUT, DELETE\", \"access_level\":0, \"headers_to_exclude\":[], \"bruteforce_protection\":[401]}, {\"url\":\".*\", \"verb\":\"GET, POST, PUT, DELETE\", \"access_level\":2, \"headers_to_exclude\":[]}]}" \
-  --wait-finish
+	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:unregister $(APP_ID) --silent --force || true
+	docker exec master-nextcloud-1 sudo -u www-data php occ app_api:app:register $(APP_ID) manual_install --json-info $(JSON_INFO) --wait-finish

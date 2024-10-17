@@ -15,7 +15,7 @@ env:
 jobs:
   build_and_publish:
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'cloud-py-api' }}
+    if: ${{ github.repository_owner == 'nextcloud' }}
     steps:
       - name: Check actor permission
         uses: skjnldsv/check-actor-permission@e591dbfe838300c007028e1219ca82cc26e8d7c5 # v2.1
