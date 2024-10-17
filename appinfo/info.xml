@@ -25,24 +25,21 @@ Flow is the key to unlocking enhanced productivity in Nextcloud, designed to be 
 	<author mail="bigcat88@icloud.com" homepage="https://github.com/bigcat88">Alexander Piskun</author>
 	<namespace>PyAppV2_flow</namespace>
 	<category>tools</category>
-	<website>https://github.com/cloud-py-api/flow</website>
-	<bugs>https://github.com/cloud-py-api/flow/issues</bugs>
-	<repository type="git">https://github.com/cloud-py-api/flow</repository>
-	<screenshot>https://raw.githubusercontent.com/cloud-py-api/flow/main/screenshots/flow_1.png</screenshot>
-	<screenshot>https://raw.githubusercontent.com/cloud-py-api/flow/main/screenshots/flow_2.png</screenshot>
-	<screenshot>https://raw.githubusercontent.com/cloud-py-api/flow/main/screenshots/flow_3.png</screenshot>
+	<website>https://github.com/nextcloud/flow</website>
+	<bugs>https://github.com/nextcloud/flow/issues</bugs>
+	<repository type="git">https://github.com/nextcloud/flow</repository>
+	<screenshot>https://raw.githubusercontent.com/nextcloud/flow/main/screenshots/flow_1.png</screenshot>
+	<screenshot>https://raw.githubusercontent.com/nextcloud/flow/main/screenshots/flow_2.png</screenshot>
+	<screenshot>https://raw.githubusercontent.com/nextcloud/flow/main/screenshots/flow_3.png</screenshot>
 	<dependencies>
 		<nextcloud min-version="30" max-version="31"/>
 	</dependencies>
 	<external-app>
 		<docker-install>
 			<registry>ghcr.io</registry>
-			<image>cloud-py-api/flow</image>
+			<image>nextcloud/flow</image>
 			<image-tag>1.0.1</image-tag>
 		</docker-install>
-		<scopes>
-			<value>ALL</value>
-		</scopes>
 		<routes>
 			<route>
 				<url>^api\/w\/nextcloud\/jobs\/.*</url>
