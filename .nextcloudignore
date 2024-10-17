@@ -16,7 +16,6 @@
 /babel.config.js
 /build
 /APPS.md
-/AUTHORS.md
 /HOW_TO_INSTALL.md
 /README.md
 /composer.*
@@ -40,4 +39,9 @@
 /requirements.txt
 /Dockerfile
 /results
+/ex_app/js
+/ex_app/lib
+/ex_app/src
+/ex_app_scripts
+/translationtool.phar
 tests
