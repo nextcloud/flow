@@ -40,4 +40,32 @@ webpackConfig.output = {
 	path: path.resolve(__dirname, 'ex_app/js'),
 }
 
+// Generate reuse license files if not in development mode
+if (!isDev) {
+	const WebpackSPDXPlugin = require('./build-js/WebpackSPDXPlugin.js')
+	webpackConfig.plugins.push(new WebpackSPDXPlugin({
+		override: {
+			select2: 'MIT',
+		},
+	}))
+
+	webpackConfig.optimization.minimizer = [{
+		apply: (compiler) => {
+			// Lazy load the Terser plugin
+			const TerserPlugin = require('terser-webpack-plugin')
+			new TerserPlugin({
+				extractComments: false,
+				terserOptions: {
+					format: {
+						comments: false,
+					},
+					compress: {
+						passes: 2,
+					},
+				},
+		  }).apply(compiler)
+		},
+	}]
+}
+
 module.exports = webpackConfig
