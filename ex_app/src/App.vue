@@ -1,3 +1,7 @@
+<!--
+  - SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
+  - SPDX-License-Identifier: MIT
+-->
 <template>
 	<NcContent app-name="flow">
 		<NcAppContent>

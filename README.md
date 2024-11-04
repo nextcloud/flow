@@ -1,3 +1,7 @@
+<!--
+  - SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
+  - SPDX-License-Identifier: MIT
+-->
 # Flow: Seamless Automation for Nextcloud
 
 Flow is a dynamic workflow automation application, carefully integrated into your Nextcloud environment. Built upon the powerful Windmill engine, Flow adapts the robust capabilities of Windmill for a smooth experience within Nextcloud, providing teams and individuals with the ability to automate, streamline, and enhance their workflows like never before.
