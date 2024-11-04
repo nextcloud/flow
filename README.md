@@ -4,6 +4,8 @@
 -->
 # Flow: Seamless Automation for Nextcloud
 
+[![REUSE status](https://api.reuse.software/badge/github.com/nextcloud/flow)](https://api.reuse.software/info/github.com/nextcloud/flow)
+
 Flow is a dynamic workflow automation application, carefully integrated into your Nextcloud environment. Built upon the powerful Windmill engine, Flow adapts the robust capabilities of Windmill for a smooth experience within Nextcloud, providing teams and individuals with the ability to automate, streamline, and enhance their workflows like never before.
 
 > **Note:**
