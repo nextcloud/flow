@@ -21,4 +21,3 @@ else
 	echo "This script needs to be executed from the root of the repository"
 	exit 1
 fi
-
