@@ -6,7 +6,7 @@ ci:
 exclude: '^ex_app/(img|js)/|.*\.phar'
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
     -   id: check-yaml
     -   id: end-of-file-fixer
@@ -20,13 +20,13 @@ repos:
         files: ex_app/lib/
 
 -   repo: https://github.com/psf/black
-    rev: 24.4.2
+    rev: 24.10.0
     hooks:
     -   id: black
         files: ex_app/lib/
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.5
+    rev: v0.7.2
     hooks:
     -   id: ruff
 
