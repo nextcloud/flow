@@ -1,3 +1,8 @@
+/**
+ * SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
+ * SPDX-License-Identifier: MIT
+ */
+
 import Vue from 'vue'
 import { translate, translatePlural } from '@nextcloud/l10n'
 import { generateUrl } from '@nextcloud/router'

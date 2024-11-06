@@ -1,3 +1,8 @@
+/**
+ * SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
+ * SPDX-License-Identifier: MIT
+ */
+
 const path = require('path')
 const webpackConfig = require('@nextcloud/webpack-vue-config')
 const webpackRules = require('@nextcloud/webpack-vue-config/rules')
@@ -38,6 +43,34 @@ webpackConfig.plugins.push(
 
 webpackConfig.output = {
 	path: path.resolve(__dirname, 'ex_app/js'),
+}
+
+// Generate reuse license files if not in development mode
+if (!isDev) {
+	const WebpackSPDXPlugin = require('./build-js/WebpackSPDXPlugin.js')
+	webpackConfig.plugins.push(new WebpackSPDXPlugin({
+		override: {
+			select2: 'MIT',
+		},
+	}))
+
+	webpackConfig.optimization.minimizer = [{
+		apply: (compiler) => {
+			// Lazy load the Terser plugin
+			const TerserPlugin = require('terser-webpack-plugin')
+			new TerserPlugin({
+				extractComments: false,
+				terserOptions: {
+					format: {
+						comments: false,
+					},
+					compress: {
+						passes: 2,
+					},
+				},
+		  }).apply(compiler)
+		},
+	}]
 }
 
 module.exports = webpackConfig

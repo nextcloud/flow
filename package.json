@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/nextcloud/flow"
   },
-  "license": "mit",
+  "license": "MIT",
   "private": true,
   "author":  "Alexander Piskun <bigcat88@icloud.com>",
   "contributors": [
@@ -20,6 +20,7 @@
   ],
   "scripts": {
     "build": "NODE_OPTIONS=--max_old_space_size=1024 webpack --node-env production --progress",
+	"postbuild": "build-js/npm-post-build.sh",
     "dev": "webpack --node-env development --progress",
     "watch": "webpack --node-env development --progress --watch",
     "lint": "eslint --ext .js,.vue src",

@@ -1,3 +1,7 @@
+<!--
+ - SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
+ - SPDX-License-Identifier: MIT
+-->
 # Code of Conduct
 
 Be openness, as well as friendly and didactic in discussions.

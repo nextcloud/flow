@@ -1,3 +1,8 @@
+/**
+ * SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
+ * SPDX-License-Identifier: MIT
+ */
+
 export const EX_APP_ID = 'flow'
 export const EX_APP_MENU_ENTRY_NAME = 'flow'
 export const APP_API_PROXY_URL_PREFIX = '/apps/app_api/proxy'
