@@ -6,15 +6,6 @@
 DB_NAME=${APP_ID:-windmill}
 DB_USER=${APP_ID:-windmilluser}
 DB_PASS=${APP_ID:-windmillpass}
-BASE_DIR="${APP_PERSISTENT_STORAGE:-/nc_app_flow_data}"
-
-# PostgreSQL version to use
-PG_VERSION=15
-PG_BIN="/usr/lib/postgresql/${PG_VERSION}/bin"
-PG_SQL="/usr/lib/postgresql/${PG_VERSION}/bin/psql"
-
-# Define the PostgreSQL data directory
-DATA_DIR="${BASE_DIR}/pgsql"
 
 # Check if EXTERNAL_DATABASE is set
 if [ -n "${EXTERNAL_DATABASE}" ]; then
@@ -31,37 +22,10 @@ if [ -n "${EXTERNAL_DATABASE}" ]; then
     exit 0
 fi
 
+source /ex_app_scripts/common_pgsql.sh
 
-# Check if PostgreSQL is installed by checking for the existence of binary files
-if [ -d "$PG_BIN" ]; then
-    echo "PostgreSQL binaries found."
-else
-    echo "PostgreSQL binaries not found."
-    echo "Adding the PostgreSQL APT repository..."
-    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-    echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-    echo "Installing PostgreSQL..."
-    apt-get update && apt-get install -y postgresql-$PG_VERSION
-fi
-
-# Ensure the directory exists and has the correct permissions
-mkdir -p "$DATA_DIR"
-chown -R postgres:postgres "$DATA_DIR"
-
-if [ ! -d "$DATA_DIR/base" ]; then
-    echo "Initializing the PostgreSQL database..."
-    sudo -u postgres ${PG_BIN}/initdb -D "$DATA_DIR"
-fi
-
-echo "Starting PostgreSQL..."
-sudo -u postgres ${PG_BIN}/pg_ctl -D "$DATA_DIR" -l "${DATA_DIR}/logfile" start
-
-echo "Waiting for PostgreSQL to start..."
-until sudo -u postgres ${PG_SQL} -c "SELECT 1" > /dev/null 2>&1; do
-    sleep 1
-    echo -n "."
-done
-echo "PostgreSQL is up and running."
+ensure_postgres_installed
+init_and_start_postgres
 
 # Check if the user exists and create if not
 sudo -u postgres $PG_SQL -c "SELECT 1 FROM pg_user WHERE usename = '$DB_USER'" | grep -q 1 || \

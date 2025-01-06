@@ -203,11 +203,13 @@ RUN apt-get update && \
     curl nodejs sudo wget procps nano && \
     rm -rf /var/lib/apt/lists/*
 
+COPY ex_app_scripts/common_pgsql.sh /ex_app_scripts/common_pgsql.sh
+COPY ex_app_scripts/install_pgsql.sh /ex_app_scripts/install_pgsql.sh
 COPY ex_app_scripts/init_pgsql.sh /ex_app_scripts/init_pgsql.sh
 COPY ex_app_scripts/set_workers_num.sh /ex_app_scripts/set_workers_num.sh
 COPY ex_app_scripts/entrypoint.sh /ex_app_scripts/entrypoint.sh
 
-RUN chmod +x /ex_app_scripts/*.sh
+RUN chmod +x /ex_app_scripts/*.sh && /ex_app_scripts/install_pgsql.sh && rm /ex_app_scripts/install_pgsql.sh
 
 COPY requirements.txt /ex_app_requirements.txt
 
