@@ -36,11 +36,13 @@ from starlette.responses import FileResponse, Response
 # os.environ["APP_PORT"] = "24000"
 # os.environ["APP_ID"] = "flow"
 # os.environ["APP_SECRET"] = "12345"  # noqa
+# os.environ["AA_VERSION"] = "4.0.0"  # value but should not be greater than minimal required AppAPI version
+# os.environ["APP_VERSION"] = "1.2.0"
 
 WINDMILL_URL = os.environ.get("WINDMILL_URL", "http://127.0.0.1:8000")
-# WINDMILL_URL = "http://localhost:85"  # uncomment this for dev(Windmill should be avalaible at port 85)
+# WINDMILL_URL = "http://localhost:8388"  # uncomment this for dev (Windmill should be available at port 8388)
 
-# ---------Enf of configuration values for manual deploy---------
+# ---------End of configuration values for manual deploy---------
 
 logging.basicConfig(
     level=logging.WARNING,
@@ -336,7 +338,7 @@ def initialize_windmill() -> None:
 
 
 def generate_random_string(length=10):
-    letters = string.ascii_letters + string.digits  # You can include other characters if needed
+    letters = string.ascii_letters + string.digits
     return "".join(random.choice(letters) for i in range(length))  # noqa
 
 
@@ -534,88 +536,160 @@ def delete_listener(registered_listener: dict) -> bool:
     return r
 
 
-def create_nextcloud_auth_variable() -> bool:
-    r = httpx.post(
-        url=f"{WINDMILL_URL}/api/w/nextcloud/variables/create",
-        cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
-        json={
-            "path": "u/admin/exapp_token",
-            "value": os.environ["APP_SECRET"],
-            "is_secret": True,
-            "is_oauth": False,
-            "description": "ExApp Authentication Variable",
-        },
-    )
-    if r.status_code >= 400:
-        LOGGER.critical("Can not create Nextcloud Auth Variable: %s %s", r.status_code, r.text)
-        return False
-    return True
+def create_or_update_variable(variable_name: str, env_var_key: str, is_secret: bool = False) -> bool:
+    """
+    Creates or updates a Windmill variable for the given env_var_key if it exists in os.environ.
+      - variable_name is the path in Windmill (without 'u/admin/' prefix).
+      - env_var_key is the environment variable name, e.g. "APP_SECRET".
+      - is_secret indicates if the variable should be created as secret or not.
+    Returns True if successful or if the environment variable isn't set (no action).
+    """
+    if env_var_key not in os.environ:
+        LOGGER.warning("Environment variable %s not found, skipping creation", env_var_key)
+        return True
 
-
-def update_nextcloud_auth_variable() -> bool:
-    r = httpx.post(
-        url=f"{WINDMILL_URL}/api/w/nextcloud/variables/update/u/admin/exapp_token",
-        cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
-        json={"value": os.environ["APP_SECRET"]},
-    )
-    if r.status_code >= 400:
-        LOGGER.critical("Can not update Nextcloud Auth Variable: %s %s", r.status_code, r.text)
-        return False
-    return True
-
-
-def create_nextcloud_auth_resource() -> bool:
-    r = httpx.post(
-        url=f"{WINDMILL_URL}/api/w/nextcloud/resources/create",
-        cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
-        json={
-            "path": "u/admin/exapp_resource",
-            "resource_type": "nextcloud",
-            "baseUrl": "unknown",
-            "description": "ExApp Authentication Resource",
-            "value": {"username": "flow_app", "password": "$var:u/admin/exapp_token"},
-        },
-    )
-    if r.status_code >= 400:
-        LOGGER.critical("Can not create Nextcloud Auth Resource: %s %s", r.status_code, r.text)
-        return False
-    return True
-
-
-def create_nextcloud_resource():
+    # Check existence
     r = httpx.get(
-        url=f"{WINDMILL_URL}/api/w/nextcloud/variables/exists/u/admin/exapp_token",
+        url=f"{WINDMILL_URL}/api/w/nextcloud/variables/exists/u/admin/{variable_name}",
         cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
     )
     if r.status_code >= 400:
-        LOGGER.critical("Can not check for Nextcloud Auth Variable: %s %s", r.status_code, r.text)
-        return
-    if r.text.lower() == "false":
-        LOGGER.info("Creating Nextcloud Auth variable")
-        if create_nextcloud_auth_variable() is False:
-            return
+        LOGGER.critical("Can not check for variable %s: %s %s", variable_name, r.status_code, r.text)
+        return False
+
+    var_exists = r.text.lower() == "true"
+    env_value = os.environ[env_var_key]
+
+    if not var_exists:
+        # Create variable
+        LOGGER.info("Creating variable '%s' from env '%s'.", variable_name, env_var_key)
+        r = httpx.post(
+            url=f"{WINDMILL_URL}/api/w/nextcloud/variables/create",
+            cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
+            json={
+                "path": f"u/admin/{variable_name}",
+                "value": env_value,
+                "is_secret": is_secret,
+                "is_oauth": False,
+                "description": f"ExApp var from env {env_var_key}",
+            },
+        )
+        if r.status_code >= 400:
+            LOGGER.critical("Could not create variable %s: %s %s", variable_name, r.status_code, r.text)
+            return False
+        return True
     else:
+        # Check if existing value differs
         r = httpx.get(
-            url=f"{WINDMILL_URL}/api/w/nextcloud/variables/get_value/u/admin/exapp_token",
+            url=f"{WINDMILL_URL}/api/w/nextcloud/variables/get_value/u/admin/{variable_name}",
             cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
         )
         if r.status_code >= 400:
-            LOGGER.critical("Can not get Nextcloud Auth Variable value: %s %s", r.status_code, r.text)
-            return
-        if r.text != os.environ["APP_SECRET"]:
-            LOGGER.info("Updating Nextcloud Auth variable")
-            if update_nextcloud_auth_variable() is False:
-                return
+            LOGGER.critical("Can not get variable value %s: %s %s", variable_name, r.status_code, r.text)
+            return False
+        current_val = r.text.strip("'\"")
 
+        if current_val != env_value:
+            LOGGER.info("Updating variable '%s' from env '%s'.", variable_name, env_var_key)
+            r = httpx.post(
+                url=f"{WINDMILL_URL}/api/w/nextcloud/variables/update/u/admin/{variable_name}",
+                cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
+                json={"value": env_value},
+            )
+            if r.status_code >= 400:
+                LOGGER.critical("Could not update variable %s: %s %s", variable_name, r.status_code, r.text)
+                return False
+        return True
+
+
+def create_or_update_exapp_resource() -> bool:
+    """
+    Creates or updates the Nextcloud resource in Windmill to include references to all four variables.
+    """
+    # Check existence of resource
     r = httpx.get(
         url=f"{WINDMILL_URL}/api/w/nextcloud/resources/exists/u/admin/exapp_resource",
         cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
     )
     if r.status_code >= 400:
         LOGGER.critical("Can not check for Nextcloud Auth Resource: %s %s", r.status_code, r.text)
-    if r.text.lower() == "false":
-        LOGGER.info("Creating Nextcloud Auth Resource")
-        create_nextcloud_auth_resource()
+        return False
+
+    resource_exists = r.text.lower() == "true"
+
+    # The resource "value" references each variable via $var:...
+    desired_resource_value = {
+        "username": "flow_app",
+        "password": "$var:u/admin/exapp_token",
+        "aa_version": "$var:u/admin/exapp_aaversion",
+        "app_id": "$var:u/admin/exapp_appid",
+        "app_version": "$var:u/admin/exapp_appversion",
+    }
+
+    if not resource_exists:
+        LOGGER.info("Creating Nextcloud Auth Resource with references to all exapp variables...")
+        r = httpx.post(
+            url=f"{WINDMILL_URL}/api/w/nextcloud/resources/create",
+            cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
+            json={
+                "path": "u/admin/exapp_resource",
+                "resource_type": "nextcloud",
+                "baseUrl": "unknown",
+                "description": "ExApp Authentication Resource",
+                "value": desired_resource_value,
+            },
+        )
+        if r.status_code >= 400:
+            LOGGER.critical("Can not create Nextcloud Auth Resource: %s %s", r.status_code, r.text)
+            return False
+        return True
+    else:
+        # Fetch the existing resource to see if an update is needed
+        check_resp = httpx.get(
+            url=f"{WINDMILL_URL}/api/w/nextcloud/resources/get/u/admin/exapp_resource",
+            cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
+        )
+        if check_resp.status_code >= 400:
+            LOGGER.critical("Could not get existing resource exapp_resource: %s %s", check_resp.status_code, check_resp.text)
+            return False
+
+        existing_data = check_resp.json()
+        existing_value = existing_data.get("value", {})
+        # Compare only "value" for now. We can also compare "baseUrl" or "description" if needed.
+        if existing_value == desired_resource_value:
+            LOGGER.debug("Resource exapp_resource is already up to date, skipping update.")
+            return True
+
+        # If mismatched, we do an update
+        LOGGER.info("Updating Nextcloud Auth Resource to keep references in sync...")
+        r = httpx.post(
+            url=f"{WINDMILL_URL}/api/w/nextcloud/resources/update/u/admin/exapp_resource",
+            cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
+            json={
+                "baseUrl": "unknown",
+                "description": "ExApp Authentication Resource",
+                "value": desired_resource_value,
+            },
+        )
+        if r.status_code >= 400:
+            LOGGER.critical("Can not update Nextcloud Auth Resource: %s %s", r.status_code, r.text)
+            return False
+        return True
+
+
+def create_nextcloud_resource() -> bool:
+    """
+    Create or update the necessary Windmill variables and resource so that
+    APP_SECRET, AA_VERSION, APP_ID, and APP_VERSION remain in sync.
+    """
+
+    if not create_or_update_variable("exapp_token", "APP_SECRET", is_secret=True):
+        return False
+    create_or_update_variable("exapp_aaversion", "AA_VERSION", is_secret=False)
+    create_or_update_variable("exapp_appid", "APP_ID", is_secret=False)
+    create_or_update_variable("exapp_appversion", "APP_VERSION", is_secret=False)
+
+    return create_or_update_exapp_resource()
 
 
 if __name__ == "__main__":
