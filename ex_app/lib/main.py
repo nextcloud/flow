@@ -650,7 +650,9 @@ def create_or_update_exapp_resource() -> bool:
             cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
         )
         if check_resp.status_code >= 400:
-            LOGGER.critical("Could not get existing resource exapp_resource: %s %s", check_resp.status_code, check_resp.text)
+            LOGGER.critical(
+                "Could not get existing resource exapp_resource: %s %s", check_resp.status_code, check_resp.text
+            )
             return False
 
         existing_data = check_resp.json()
