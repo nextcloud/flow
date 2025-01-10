@@ -36,7 +36,7 @@ Flow is the key to unlocking enhanced productivity in Nextcloud, designed to be 
 	<screenshot>https://raw.githubusercontent.com/nextcloud/flow/main/screenshots/flow_2.png</screenshot>
 	<screenshot>https://raw.githubusercontent.com/nextcloud/flow/main/screenshots/flow_3.png</screenshot>
 	<dependencies>
-		<nextcloud min-version="30" max-version="31"/>
+		<nextcloud min-version="30" max-version="32"/>
 	</dependencies>
 	<external-app>
 		<docker-install>
