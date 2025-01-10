@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 ARG DEBIAN_IMAGE=debian:bookworm-slim
 ARG RUST_IMAGE=rust:1.80-slim-bookworm
-ARG PYTHON_IMAGE=python:3.11.8-slim-bookworm
+ARG PYTHON_IMAGE=python:3.12-slim
 
 FROM ${RUST_IMAGE} AS rust_base
 
