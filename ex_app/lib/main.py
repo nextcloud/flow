@@ -655,8 +655,12 @@ def create_or_update_exapp_resource() -> bool:
 
     existing_data = check_resp.json()
     existing_value = existing_data.get("value", {})
+
+    # Filter existing_value to only include keys present in desired_resource_value
+    filtered_existing_value = {key: existing_value[key] for key in desired_resource_value if key in existing_value}
+
     # Compare only "value" for now. We can also compare "baseUrl" or "description" if needed.
-    if existing_value == desired_resource_value:
+    if filtered_existing_value == desired_resource_value:
         LOGGER.debug("Resource exapp_resource is already up to date, skipping update.")
         return True
 
