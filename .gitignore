@@ -96,3 +96,4 @@ converted/
 geckodriver.log
 /windmill_tmp/
 /windmill_src/
+/windmill_selfhosted/
