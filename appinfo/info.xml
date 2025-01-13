@@ -22,7 +22,7 @@ Flow is the key to unlocking enhanced productivity in Nextcloud, designed to be 
 **Requires [`AppAPI`](https://github.com/nextcloud/app_api) and `webhook_listeners` to be enabled to work.**
 
 	]]></description>
-	<version>1.0.1</version>
+	<version>1.1.0</version>
 	<licence>agpl</licence>
 	<author mail="julien-nc@posteo.net" homepage="https://github.com/julien-nc">Julien Veyssier</author>
 	<author mail="mklehr@gmx.net" homepage="https://github.com/marcelklehr">Marcel Klehr</author>
@@ -42,7 +42,7 @@ Flow is the key to unlocking enhanced productivity in Nextcloud, designed to be 
 		<docker-install>
 			<registry>ghcr.io</registry>
 			<image>nextcloud/flow</image>
-			<image-tag>1.0.1</image-tag>
+			<image-tag>1.1.0</image-tag>
 		</docker-install>
 		<routes>
 			<route>

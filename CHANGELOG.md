@@ -9,6 +9,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.0 - 2025-01-14]
+
+### Added
+
+- Initialization of the `baseUrl` value in the Nextcloud Auth resource. #35
+- Synchronization of `AA_VERSION` and `APP_VERSION` values in the Nextcloud Auth resource. #32
+
+### Changed
+
+- Python version updated from `3.10` to `3.12`. #33
+
+### Fixed
+
+- The PgSQL database now comes preinstalled in the Docker image instead of being installed during ExApp startup. #30
+
 ## [1.0.1 - 2024-10-10]
 
 ### Added
