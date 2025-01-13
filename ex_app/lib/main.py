@@ -617,7 +617,6 @@ def create_or_update_exapp_resource() -> bool:
 
     # The resource "value" references each variable via $var:...
     desired_resource_value = {
-        "username": "flow_app",
         "password": "$var:u/admin/exapp_token",
         "aa_version": "$var:u/admin/exapp_aaversion",
         "app_id": "$var:u/admin/exapp_appid",
@@ -632,9 +631,12 @@ def create_or_update_exapp_resource() -> bool:
             json={
                 "path": "u/admin/exapp_resource",
                 "resource_type": "nextcloud",
-                "baseUrl": "unknown",
                 "description": "ExApp Authentication Resource",
-                "value": desired_resource_value,
+                "value": {
+                    "username": "flow_app",
+                    **desired_resource_value,
+                    "baseUrl": os.environ["NEXTCLOUD_URL"].removesuffix("index.php").removesuffix("/"),
+                },
             },
         )
         if r.status_code >= 400:
@@ -659,7 +661,7 @@ def create_or_update_exapp_resource() -> bool:
     # Filter existing_value to only include keys present in desired_resource_value
     filtered_existing_value = {key: existing_value[key] for key in desired_resource_value if key in existing_value}
 
-    # Compare only "value" for now. We can also compare "baseUrl" or "description" if needed.
+    # Compare only "value" for now. Do not compare "username" or "baseUrl" as it can be changed by user manually.
     if filtered_existing_value == desired_resource_value:
         LOGGER.debug("Resource exapp_resource is already up to date, skipping update.")
         return True
@@ -670,9 +672,12 @@ def create_or_update_exapp_resource() -> bool:
         url=f"{WINDMILL_URL}/api/w/nextcloud/resources/update/u/admin/exapp_resource",
         cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
         json={
-            "baseUrl": "unknown",
             "description": "ExApp Authentication Resource",
-            "value": desired_resource_value,
+            "value": {
+                "username": existing_value.get("username"),
+                **desired_resource_value,
+                "baseUrl": existing_value.get("baseUrl"),
+            },
         },
     )
     if r.status_code >= 400:
