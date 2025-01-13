@@ -161,6 +161,29 @@ Follow these steps to manually deploy Flow without Docker:
 
    Windmill should now appear within your Nextcloud instance, accessible via the Flow app.
 
+### Notes for Development Setup
+
+*Windmill will be deployed as per its official documentation. The following steps simplify its integration with Nextcloud's development setup.*
+
+1. In the `.env` file used for deploying Windmill's Docker Compose containers, set the desired Windmill version. The current version can be found in the `Makefile` (e.g., `1.394.4`). Adjust the following line accordingly:
+
+   ```bash
+   WM_IMAGE=ghcr.io/windmill-labs/windmill:1.394.4
+   ```
+
+2. Add the `master_default` network (or the network name used for Nextcloud in your Julius `nextcloud-docker-dev` setup) to each container in Windmill's `docker-compose.yml`.
+
+   Additionally, append the following lines to the bottom of Windmill's `docker-compose.yml` file:
+
+   ```yaml
+   networks:
+     master_default:
+       external: true
+   ```
+
+3. Change the `Caddy` exposed port in Windmill's `docker-compose.yml` from `80` to `8388` (the port that is set in `main.py` script)
+4. Deploy Windmill, then proceed to step 8 in the Manual Deployment section described above.
+
 ## Contributing
 
 We welcome contributions from the community! If you're interested in helping improve Flow, please feel free to submit a pull request or open an issue on our GitHub repository. We’re constantly working to improve the functionality and capabilities of Flow, and your feedback is invaluable.
