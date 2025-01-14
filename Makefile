@@ -53,9 +53,12 @@ static_frontend:
 .PHONY: build-push
 build-push:
 	docker login ghcr.io
-	pushd windmill_src && \
-	docker buildx build --push --build-arg VITE_BASE_URL=/index.php/apps/app_api/proxy/flow --platform linux/arm64/v8,linux/amd64 --tag ghcr.io/nextcloud/$(APP_ID):$(VISIONATRIX_VERSION) . && \
-	popd
+	docker buildx build --push \
+		--build-arg VITE_BASE_URL=/index.php/apps/app_api/proxy/flow \
+		--platform linux/arm64/v8,linux/amd64 \
+		--tag ghcr.io/nextcloud/$(APP_ID):$(APP_VERSION) \
+		--file windmill_src/Dockerfile \
+		windmill_src
 
 .PHONY: run30
 run30:
