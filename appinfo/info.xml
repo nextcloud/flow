@@ -8,16 +8,18 @@
 	<name>Flow</name>
 	<summary>Automate and Streamline Your Workflows in Nextcloud</summary>
 	<description>
-	<![CDATA[Flow is a powerful automation and workflow application, fully integrated into your Nextcloud ecosystem. Designed with a sleek interface and advanced capabilities, Flow empowers you to streamline tasks, automate repetitive processes, and enhance collaboration—all within the secure and familiar environment of Nextcloud.
+	<![CDATA[Nextcloud Flow is a set of intuitive automation components that allow organizations to automate and streamline internal workflows.
 
-### With Flow, you can:
+Through easy low-code and no-code interfaces it enables users to effortlessly automate routine tasks, ease data entry and manipulation and reduce manual work.
 
-- Automate complex workflows with ease using intuitive drag-and-drop features.
-- Schedule tasks, set triggers, and monitor progress in real-time.
-- Keep your team in sync by connecting various apps and services, all under one platform.
-- Enjoy a seamless experience, whether you're managing documents, communications, or custom workflows.
+It includes components designed for a variety of businesses needs and at various scales, from SME to large enterprises.
 
-Flow is the key to unlocking enhanced productivity in Nextcloud, designed to be both user-friendly and flexible, so you can focus on what truly matters.
+1. Users can build simple mini-apps to manage structured data through the no-code interface in the Tables app.
+2. Users can automate actions on a variety of triggers through no-code interfaces in the Flow user settings.
+3. Administrators can additionally configure file access controls to automatically block unauthorized access to sensitive data.
+4. Business process annalists and administrators have access to the powerful business automation features built on the open source **Windmill** tool, capable of modeling large business processes that require interaction with internal and external services.
+
+This app provides an easy way to install the Windmill based Business Process Automation component of Flow.
 
 **Requires [`AppAPI`](https://github.com/nextcloud/app_api) and `webhook_listeners` to be enabled to work.**
 

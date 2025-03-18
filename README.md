@@ -6,38 +6,21 @@
 
 [![REUSE status](https://api.reuse.software/badge/github.com/nextcloud/flow)](https://api.reuse.software/info/github.com/nextcloud/flow)
 
-Flow is a dynamic workflow automation application, carefully integrated into your Nextcloud environment. Built upon the powerful Windmill engine, Flow adapts the robust capabilities of Windmill for a smooth experience within Nextcloud, providing teams and individuals with the ability to automate, streamline, and enhance their workflows like never before.
+Nextcloud Flow is a set of intuitive automation components that allow organizations to automate and streamline internal workflows.
+
+Through easy low-code and no-code interfaces it enables users to effortlessly automate routine tasks, ease data entry and manipulation and reduce manual work.
+
+It includes components designed for a variety of businesses needs and at various scales, from SME to large enterprises.
+
+1. Users can build simple mini-apps to manage structured data through the no-code interface in the Tables app.
+2. Users can automate actions on a variety of triggers through no-code interfaces in the Flow user settings.
+3. Administrators can additionally configure file access controls to automatically block unauthorized access to sensitive data.
+4. Business process annalists and administrators have access to the powerful business automation features built on the open source **Windmill** tool, capable of modeling large business processes that require interaction with internal and external services.
+
+This app provides an easy way to install the Windmill based Business Process Automation component of Flow.
 
 > **Note:**
 > **Requires the `AppAPI` and `webhooks_listener` apps to be enabled to work properly.**
-
-## Key Features of Flow
-
-Flow brings a wealth of features designed to improve productivity and collaboration, with a particular focus on user-friendliness and scalability:
-
-### 1. **Drag-and-Drop Workflow Builder**
-
-- Create complex workflows with ease using a highly intuitive drag-and-drop interface. Whether you're automating document management, team notifications, or custom processes, Flow's visual workflow designer ensures anyone can build and modify workflows with minimal effort.
-
-### 2. **Automate Repetitive Tasks**
-
-- Save time and resources by automating common repetitive tasks. With Flow, you can schedule tasks to run on specific conditions or set up trigger-based actions to run automatically, reducing manual interventions and enhancing efficiency.
-
-### 3. **Seamless Integration with Nextcloud**
-
-- As a fully integrated part of Nextcloud, Flow works effortlessly alongside other applications in your Nextcloud environment. Automate tasks related to file management, collaboration, communication, and more—all within the same familiar platform.
-
-### 4. **Built on the Windmill Engine**
-
-- Flow leverages the robust backend of Windmill, an established workflow automation platform, powering its capabilities for scalability, efficiency, and reliability. Windmill’s foundation ensures that Flow inherits an array of advanced features while being customized for seamless use within Nextcloud.
-
-### 5. **Real-Time Workflow Monitoring**
-
-- Keep track of the progress of your workflows in real-time with detailed analytics and dashboards. Monitor performance, track errors, and ensure that every task is executed smoothly without delays.
-
-### 6. **Flexible Scheduling and Triggers**
-
-- Flow allows you to set up flexible schedules for tasks, trigger workflows based on specific events, and monitor their execution in real-time. With Flow’s built-in scheduler, you can execute workflows on demand, at predefined intervals, or when specific criteria are met.
 
 ## Getting Started
 
