@@ -203,6 +203,22 @@ RUN apt-get update && \
     curl nodejs sudo wget procps nano && \
     rm -rf /var/lib/apt/lists/*
 
+# HaRP: download and install FRP client
+RUN set -ex; \
+    ARCH=$(uname -m); \
+    if [ "$ARCH" = "aarch64" ]; then \
+      FRP_URL="https://raw.githubusercontent.com/nextcloud/HaRP/main/exapps_dev/frp_0.61.1_linux_arm64.tar.gz"; \
+    else \
+      FRP_URL="https://raw.githubusercontent.com/nextcloud/HaRP/main/exapps_dev/frp_0.61.1_linux_amd64.tar.gz"; \
+    fi; \
+    echo "Downloading FRP client from $FRP_URL"; \
+    curl -L "$FRP_URL" -o /tmp/frp.tar.gz; \
+    tar -C /tmp -xzf /tmp/frp.tar.gz; \
+    mv /tmp/frp_0.61.1_linux_* /tmp/frp; \
+    cp /tmp/frp/frpc /usr/local/bin/frpc; \
+    chmod +x /usr/local/bin/frpc; \
+    rm -rf /tmp/frp /tmp/frp.tar.gz
+
 COPY ex_app_scripts/common_pgsql.sh /ex_app_scripts/common_pgsql.sh
 COPY ex_app_scripts/install_pgsql.sh /ex_app_scripts/install_pgsql.sh
 COPY ex_app_scripts/init_pgsql.sh /ex_app_scripts/init_pgsql.sh

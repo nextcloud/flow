@@ -24,7 +24,7 @@ This app provides an easy way to install the Windmill based Business Process Aut
 **Requires [`AppAPI`](https://github.com/nextcloud/app_api) and `webhook_listeners` to be enabled to work.**
 
 	]]></description>
-	<version>1.1.0</version>
+	<version>1.2.0</version>
 	<licence>agpl</licence>
 	<author mail="julien-nc@posteo.net" homepage="https://github.com/julien-nc">Julien Veyssier</author>
 	<author mail="mklehr@gmx.net" homepage="https://github.com/marcelklehr">Marcel Klehr</author>
@@ -44,7 +44,7 @@ This app provides an easy way to install the Windmill based Business Process Aut
 		<docker-install>
 			<registry>ghcr.io</registry>
 			<image>nextcloud/flow</image>
-			<image-tag>1.1.0</image-tag>
+			<image-tag>1.2.0</image-tag>
 		</docker-install>
 		<routes>
 			<route>

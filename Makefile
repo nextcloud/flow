@@ -5,7 +5,7 @@
 APP_ID := flow
 APP_NAME := Flow
 APP_VERSION := $$(xmlstarlet sel -t -v "//version" appinfo/info.xml)
-JSON_INFO := "{\"id\":\"$(APP_ID)\",\"name\":\"$(APP_NAME)\",\"daemon_config_name\":\"manual_install\",\"version\":\"$(APP_VERSION)\",\"secret\":\"12345\",\"port\":24000, \"routes\": [{\"url\":\"^api\\\/w\\\/nextcloud\\\/jobs\\\/.*\", \"verb\":\"GET, POST, PUT, DELETE\", \"access_level\":0, \"headers_to_exclude\":[], \"bruteforce_protection\":[401]}, {\"url\":\"^api\\\/w\\\/nextcloud\\\/jobs_u\\\/.*\", \"verb\":\"GET, POST, PUT, DELETE\", \"access_level\":0, \"headers_to_exclude\":[], \"bruteforce_protection\":[401]}, {\"url\":\".*\", \"verb\":\"GET, POST, PUT, DELETE\", \"access_level\":2, \"headers_to_exclude\":[]}]}"
+JSON_INFO := "{\"id\":\"$(APP_ID)\",\"name\":\"$(APP_NAME)\",\"daemon_config_name\":\"manual_install\",\"version\":\"$(APP_VERSION)\",\"secret\":\"12345\",\"port\":27100, \"routes\": [{\"url\":\"^api\\\/w\\\/nextcloud\\\/jobs\\\/.*\", \"verb\":\"GET, POST, PUT, DELETE\", \"access_level\":0, \"headers_to_exclude\":[], \"bruteforce_protection\":[401]}, {\"url\":\"^api\\\/w\\\/nextcloud\\\/jobs_u\\\/.*\", \"verb\":\"GET, POST, PUT, DELETE\", \"access_level\":0, \"headers_to_exclude\":[], \"bruteforce_protection\":[401]}, {\"url\":\".*\", \"verb\":\"GET, POST, PUT, DELETE\", \"access_level\":2, \"headers_to_exclude\":[]}]}"
 
 
 .PHONY: help
