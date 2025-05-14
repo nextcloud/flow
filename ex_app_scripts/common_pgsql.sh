@@ -34,6 +34,11 @@ init_and_start_postgres() {
     if [ ! -d "$DATA_DIR/base" ]; then
         echo "Initializing the PostgreSQL database..."
         sudo -u postgres ${PG_BIN}/initdb -D "$DATA_DIR"
+        PG_CONF="${DATA_DIR}/postgresql.conf"
+        if ! grep -q "^listen_addresses\s*=\s*''" "$PG_CONF"; then
+            echo "Updating PostgreSQL configuration to disable TCP/IP connections..."
+            echo "listen_addresses = ''" >> "$PG_CONF"
+        fi
     fi
 
     echo "Starting PostgreSQL..."

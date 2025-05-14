@@ -38,11 +38,11 @@ sudo -u postgres $PG_SQL -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
 
 if [ -z "${DATABASE_URL}" ]; then
     # Set DATABASE_URL environment variable
-    DATABASE_URL="postgres://$DB_USER:$DB_PASS@localhost:5432/$DB_NAME"
+    DATABASE_URL="postgresql://$DB_USER:$DB_PASS@%2Fvar%2Frun%2Fpostgresql/$DB_NAME?sslmode=disable"
 
     # Check if DATABASE_URL is already in /etc/environment, if not, add it
     if ! grep -q "^export DATABASE_URL=" /etc/environment; then
-        echo "export DATABASE_URL=\"postgres://$DB_USER:$DB_PASS@localhost:5432/$DB_NAME\"" >> /etc/environment
+        echo "export DATABASE_URL=\"postgresql://$DB_USER:$DB_PASS@%2Fvar%2Frun%2Fpostgresql/$DB_NAME?sslmode=disable\"" >> /etc/environment
     fi
 
     echo "DATABASE_URL was not set. It is now set to: $DATABASE_URL"
