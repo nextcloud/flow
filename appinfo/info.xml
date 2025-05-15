@@ -69,5 +69,17 @@ This app provides an easy way to install the Windmill based Business Process Aut
 				<headers_to_exclude>[]</headers_to_exclude>
 			</route>
 		</routes>
+		<environment-variables>
+			<variable>
+				<name>NUM_WORKERS</name>
+				<display-name>Number of workers</display-name>
+				<description>Override the default count of Windmill workers</description>
+			</variable>
+			<variable>
+				<name>EXTERNAL_DATABASE</name>
+				<display-name>External database</display-name>
+				<description>External database URL in format: postgres://db_user:db_pass@db_address:5432/db_name</description>
+			</variable>
+		</environment-variables>
 	</external-app>
 </info>
