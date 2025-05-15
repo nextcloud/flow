@@ -80,6 +80,12 @@ This app provides an easy way to install the Windmill based Business Process Aut
 				<display-name>External database</display-name>
 				<description>External database URL in format: postgres://db_user:db_pass@db_address:5432/db_name</description>
 			</variable>
+			<variable>
+				<name>RUST_LOG</name>
+				<display-name>Windmill log level</display-name>
+				<description>Possible values: debug, info, warn, error</description>
+				<default>warn</default>
+			</variable>
 		</environment-variables>
 	</external-app>
 </info>
