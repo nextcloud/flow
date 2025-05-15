@@ -42,7 +42,7 @@ For users familiar with Windmill, Flow offers additional advanced features that 
 
 > **Note:**
 >
-> This is only supported starting from Nextcloud version `32.0.0`
+> This is only supported starting from Nextcloud version `31.0.4`
 
 **Q: How can I control the number of Windmill workers?**
 **A:** You can set the `NUM_WORKERS` environment variable. The default value is `number_of_cpu_cores * 2`.
