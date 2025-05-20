@@ -31,7 +31,7 @@ This app provides an easy way to install the Windmill based Business Process Aut
 	<author mail="bigcat88@icloud.com" homepage="https://github.com/bigcat88">Alexander Piskun</author>
 	<namespace>PyAppV2_flow</namespace>
 	<category>tools</category>
-	<category>flow</category>
+	<category>workflow</category>
 	<website>https://github.com/nextcloud/flow</website>
 	<bugs>https://github.com/nextcloud/flow/issues</bugs>
 	<repository type="git">https://github.com/nextcloud/flow</repository>
