@@ -32,7 +32,7 @@ jobs:
           echo "APP_VERSION=${GITHUB_REF##*/}" >> $GITHUB_ENV
 
       - name: Checkout
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v3
         with:
           path: ${{ env.APP_NAME }}
 
@@ -126,7 +126,7 @@ jobs:
           unzip latest-$NCVERSION.zip
 
       - name: Checkout server master fallback
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v3
         if: ${{ steps.server-checkout.outcome != 'success' }}
         with:
           submodules: true
