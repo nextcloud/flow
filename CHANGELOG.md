@@ -9,6 +9,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.0 - 2025-05-20]
+
+### Added
+
+- Nextcloud 32 HaRP support. #48
+- Ability to specify Windmill worker count during deploying. #54
+- Ability to specify Windmill log level during deploying. #55
+- Automatic configure Windmill instance URL in Settings. #56
+
+### Fixed
+
+- The app now should now additionally show up in the Flow category in the AppStore. #52
+- New installations will use bundled PgSQL over socket for easier deployment with `network=host`. #53
+
 ## [1.1.0 - 2025-01-14]
 
 ### Added
