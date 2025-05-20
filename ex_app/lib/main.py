@@ -38,6 +38,7 @@ from starlette.responses import FileResponse, Response
 # os.environ["APP_SECRET"] = "12345"  # noqa
 # os.environ["AA_VERSION"] = "4.0.0"  # value but should not be greater than minimal required AppAPI version
 # os.environ["APP_VERSION"] = "1.2.0"
+# os.environ["HP_SHARED_KEY"] = "1"  # uncomment ONLY for "manual-install" with HaRP
 
 WINDMILL_URL = os.environ.get("WINDMILL_URL", "http://127.0.0.1:8000")
 # WINDMILL_URL = "http://localhost:8388"  # uncomment this for dev (Windmill should be available at port 8388)
@@ -51,6 +52,7 @@ logging.basicConfig(
 )
 LOGGER = logging.getLogger("flow")
 LOGGER.setLevel(logging.DEBUG)
+HARP_ENABLED = bool(os.environ.get("HP_SHARED_KEY"))
 
 DEFAULT_USER_EMAIL = "admin@windmill.dev"
 DEFAULT_USER_PASSWORD = "changeme"
@@ -697,9 +699,44 @@ def create_nextcloud_resource() -> bool:
     return create_or_update_exapp_resource()
 
 
+def set_instance_core_base_url() -> bool:
+    """Set Public base url of the instance to the possible url of Nextcloud if it has value of http(s)://localhost"""
+    r = httpx.get(
+        url=f"{WINDMILL_URL}/api/settings/global/base_url",
+        cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
+    )
+    if r.status_code >= 400:
+        LOGGER.critical("Can not check for default instance url: %s %s", r.status_code, r.text)
+        return False
+
+    instance_base_url = r.text.strip('"')
+    if instance_base_url not in ("http://localhost", "https://locahost"):
+        return True
+
+    flow_base_instance_url = os.environ["NEXTCLOUD_URL"].removesuffix("index.php").removesuffix("/")
+    if HARP_ENABLED:
+        flow_base_instance_url += "/exapps/flow"
+    else:
+        flow_base_instance_url += "/index.php/apps/app_api/proxy/flow"
+
+    LOGGER.debug("Setting base URL of instance to the %s", flow_base_instance_url)
+    r = httpx.post(
+        url=f"{WINDMILL_URL}/api/settings/global/base_url",
+        cookies={"token": USERS_STORAGE[DEFAULT_USER_EMAIL]["token"]},
+        json={
+            "value": flow_base_instance_url,
+        },
+    )
+    if r.status_code >= 400:
+        LOGGER.critical("Can not set default instance url: %s %s", r.status_code, r.text)
+        return False
+    return True
+
+
 if __name__ == "__main__":
     initialize_windmill()
     create_nextcloud_resource()
+    set_instance_core_base_url()
     # Current working dir is set for the Service we are wrapping, so change we first for ExApp default one
     os.chdir(Path(__file__).parent)
     run_app(APP, log_level="info")  # Calling wrapper around `uvicorn.run`.
