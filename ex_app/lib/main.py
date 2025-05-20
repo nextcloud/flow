@@ -710,7 +710,7 @@ def set_instance_core_base_url() -> bool:
         return False
 
     instance_base_url = r.text.strip('"')
-    if instance_base_url not in ("http://localhost", "https://locahost"):
+    if instance_base_url != "null":
         return True
 
     flow_base_instance_url = os.environ["NEXTCLOUD_URL"].removesuffix("index.php").removesuffix("/")
