@@ -198,6 +198,10 @@ def get_windmill_username_from_request(request: Request) -> str:
         username = ""
     if not username:
         return ""
+    if len("wapp_") + len(username) + len("@windmill.dev") > 50:
+        # Length of the "email" field in Windmill is limited to 50 chars; do not append "wapp_" prefix in this case.
+        # When we can do the breaking change, we can remove the "wapp_" prefix completely + use the shorter suffix.
+        return username
     return "wapp_" + username
 
 
