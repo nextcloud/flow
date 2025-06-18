@@ -12,15 +12,15 @@
   },
   "license": "MIT",
   "private": true,
-  "author":  "Alexander Piskun <bigcat88@icloud.com>",
+  "author": "Alexander Piskun <bigcat88@icloud.com>",
   "contributors": [
-    "Marcel Klehr <mklehr@gmx.net>" ,
+    "Marcel Klehr <mklehr@gmx.net>",
     "Julien Veyssier <julien-nc@posteo.net>",
     "Alexander Piskun <bigcat88@gmail.com>"
   ],
   "scripts": {
     "build": "NODE_OPTIONS=--max_old_space_size=1024 webpack --node-env production --progress",
-	"postbuild": "build-js/npm-post-build.sh",
+    "postbuild": "build-js/npm-post-build.sh",
     "dev": "webpack --node-env development --progress",
     "watch": "webpack --node-env development --progress --watch",
     "lint": "eslint --ext .js,.vue src",
@@ -60,7 +60,7 @@
     "stylelint-webpack-plugin": "^5.0.0"
   },
   "engines": {
-    "node": ">=16.0.0",
-    "npm": "^7.0.0 || ^8.0.0"
+    "node": "^22.0.0",
+    "npm": "^10.0.0"
   }
 }
