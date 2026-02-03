@@ -56,7 +56,7 @@ build-push:
 	docker login ghcr.io
 	docker buildx build --push \
 		--build-arg VITE_BASE_URL=/index.php/apps/app_api/proxy/flow \
-		--build-arg features=python \
+		--build-arg features=deno_core,python \
 		--platform linux/arm64/v8,linux/amd64 \
 		--tag ghcr.io/nextcloud/$(APP_ID):$(APP_VERSION) \
 		--file windmill_src/Dockerfile \
@@ -66,7 +66,7 @@ build-push:
 build-amd64:
 	docker buildx build --load \
 		--build-arg VITE_BASE_URL=/index.php/apps/app_api/proxy/flow \
-		--build-arg features=python \
+		--build-arg features=deno_core,python \
 		--platform linux/amd64 \
 		--tag ghcr.io/nextcloud/$(APP_ID):$(APP_VERSION) \
 		--file windmill_src/Dockerfile \
