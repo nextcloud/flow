@@ -9,6 +9,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.3.1 - 2026-02-09]
+
+### Fixed
+
+- Enabled the `deno_core` Cargo feature when building Windmill to fix JavaScript expression evaluation in workflows. #134 Thanks to @strobelpierre
+
+## [1.3.0 - 2026-01-13]
+
+### Changed
+
+- Windmill updated from version `v1.394.4` to `v1.603.4`
+
 ## [1.2.2 - 2025-12-07]
 
 ### Added
