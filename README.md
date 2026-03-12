@@ -2,6 +2,12 @@
   - SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
   - SPDX-License-Identifier: MIT
 -->
+# ⚠️ DEPRECATED 
+
+ℹ️ **The flow app has been superseeded by https://github.com/nextcloud/integration_windmill**
+
+**for an improved operational setup and security.**
+
 # Flow: Seamless Automation for Nextcloud
 
 [![REUSE status](https://api.reuse.software/badge/github.com/nextcloud/flow)](https://api.reuse.software/info/github.com/nextcloud/flow)
