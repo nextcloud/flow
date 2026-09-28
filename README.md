@@ -2,7 +2,7 @@
   - SPDX-FileCopyrightText: 2024 Nextcloud GmbH and Nextcloud contributors
   - SPDX-License-Identifier: MIT
 -->
-# ⚠️ DEPRECATED 
+# ⚠️ DEPRECATED
 
 ℹ️ **The flow app has been superseeded by https://github.com/nextcloud/integration_windmill**
 
